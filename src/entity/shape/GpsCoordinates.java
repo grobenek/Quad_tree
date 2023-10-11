@@ -1,4 +1,4 @@
-package entity;
+package entity.shape;
 
 /**
  * @param width N or S

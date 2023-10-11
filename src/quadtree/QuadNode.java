@@ -1,6 +1,6 @@
 package quadtree;
 
-import entity.GpsCoordinates;
+import entity.shape.Rectangle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,24 +9,24 @@ import java.util.List;
 public class QuadNode<T> {
   public static final int MAX_CHILDREN = 4;
   private final QuadNode<T>[] children;
-  private GpsCoordinates gpsCoordinates;
+  private final Rectangle shape;
   private final List<T> items;
 
-  public QuadNode(QuadNode<T>[] children, GpsCoordinates gpsCoordinates, List<T> items) {
+  public QuadNode(QuadNode<T>[] children, Rectangle shape, List<T> items) {
     this.children = children;
-    this.gpsCoordinates = gpsCoordinates;
+    this.shape = shape;
     this.items = items;
   }
 
-  public QuadNode(QuadNode<T>[] children, GpsCoordinates gpsCoordinates) {
+  public QuadNode(QuadNode<T>[] children, Rectangle shape) {
     this.children = children;
-    this.gpsCoordinates = gpsCoordinates;
+    this.shape = shape;
     this.items = new ArrayList<>();
   }
 
-  public QuadNode(GpsCoordinates gpsCoordinates) {
-    this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // warning
-    this.gpsCoordinates = gpsCoordinates;
+  public QuadNode(Rectangle shape) {
+    this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
+    this.shape = shape;
     this.items = new ArrayList<>();
   }
 
@@ -52,12 +52,8 @@ public class QuadNode<T> {
     return items;
   }
 
-  public GpsCoordinates getGpsCoordinates() {
-    return gpsCoordinates;
-  }
-
-  public void setGpsCoordinates(GpsCoordinates gpsCoordinates) {
-    this.gpsCoordinates = gpsCoordinates;
+  public Rectangle getShape() {
+    return shape;
   }
 
   public QuadNode<T>[] getChildren() {
@@ -80,7 +76,7 @@ public class QuadNode<T> {
     return children[direction.ordinal()];
   }
 
-  public void setChild(QuadNode<T> child, Direction direction) {
+  public void addChild(QuadNode<T> child, Direction direction) {
     if (children[direction.ordinal()] != null) {
       throw new IllegalStateException(
           String.format("Child at direction %s already exists!", direction.name()));
@@ -89,7 +85,7 @@ public class QuadNode<T> {
     children[direction.ordinal()] = child;
   }
 
-  public void setChild(QuadNode<T> child, int index) {
+  public void addChild(QuadNode<T> child, int index) {
     if (index < 0 || index > MAX_CHILDREN - 1) {
       throw new IndexOutOfBoundsException(String.format("Index %d is out of bounds!", index));
     }
@@ -107,10 +103,13 @@ public class QuadNode<T> {
 
   @Override
   public String toString() {
-    return "QuadNode{" +
-            "children=" + Arrays.toString(children) +
-            ", gpsCoordinates=" + gpsCoordinates +
-            ", items=" + items +
-            '}';
+    return "QuadNode{"
+        + "children="
+        + Arrays.toString(children)
+        + ", gpsCoordinates="
+        + shape
+        + ", items="
+        + items
+        + '}';
   }
 }

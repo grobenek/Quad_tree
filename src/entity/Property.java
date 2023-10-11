@@ -1,5 +1,7 @@
 package entity;
 
+import entity.shape.GpsCoordinates;
+
 import java.util.List;
 
 public class Property {
