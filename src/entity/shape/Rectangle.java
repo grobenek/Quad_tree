@@ -29,4 +29,14 @@ public class Rectangle {
   public double getLength() {
     return length;
   }
+
+  @Override
+  public String toString() {
+    return "Rectangle{" +
+            "firstPoint=" + firstPoint +
+            ", secondPoint=" + secondPoint +
+            ", width=" + width +
+            ", length=" + length +
+            '}';
+  }
 }
