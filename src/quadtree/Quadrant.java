@@ -1,6 +1,6 @@
 package quadtree;
 
-public enum Direction {
+public enum Quadrant {
   NORTH_WEST,
   NORTH_EAST,
   SOUTH_WEST,

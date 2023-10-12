@@ -1,5 +1,7 @@
 package quadtree;
 
+import entity.shape.Direction;
+import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
 
 import java.util.ArrayList;
@@ -68,21 +70,18 @@ public class QuadNode<T> {
     return children[index];
   }
 
-  public QuadNode<T> getChild(Direction direction) {
-    if (direction == null) {
+  public QuadNode<T> getChild(Quadrant quadrant) {
+    if (quadrant == null) {
       return null;
     }
 
-    return children[direction.ordinal()];
+    return children[quadrant.ordinal()];
   }
 
-  public void addChild(QuadNode<T> child, Direction direction) {
-    if (children[direction.ordinal()] != null) {
-      throw new IllegalStateException(
-          String.format("Child at direction %s already exists!", direction.name()));
-    }
+  public void addChild(QuadNode<T> child, Quadrant quadrant) {
+    checkForExistingChildrenAtDirection(quadrant);
 
-    children[direction.ordinal()] = child;
+    children[quadrant.ordinal()] = child;
   }
 
   public void addChild(QuadNode<T> child, int index) {
@@ -95,6 +94,63 @@ public class QuadNode<T> {
     }
 
     children[index] = child;
+  }
+
+  public void generateChild(Quadrant quadrant) {
+    checkForExistingChildrenAtDirection(quadrant);
+
+    addChild(new QuadNode<>(generateChildShape(quadrant)), quadrant);
+  }
+
+  private void checkForExistingChildrenAtDirection(Quadrant quadrant) {
+    if (this.children[quadrant.ordinal()] != null) {
+      throw new IllegalStateException(
+          String.format(
+              "Child at direction %d already exists at [%f, %f], [%f, %f]!",
+              quadrant.ordinal(),
+              shape.getFirstPoint().widthCoordinate(),
+              shape.getFirstPoint().lengthCoordinate(),
+              shape.getSecondPoint().widthCoordinate(),
+              shape.getSecondPoint().lengthCoordinate()));
+    }
+  }
+
+  private Rectangle generateChildShape(Quadrant quadrant) {
+    GpsCoordinates bottomLeft = shape.getFirstPoint();
+    GpsCoordinates topRight = shape.getSecondPoint();
+
+    double midWidth = (bottomLeft.widthCoordinate() + topRight.widthCoordinate()) / 2;
+    double midLength = (bottomLeft.lengthCoordinate() + topRight.lengthCoordinate()) / 2;
+
+    switch (quadrant) {
+      case NORTH_WEST -> {
+        return new Rectangle(
+            new GpsCoordinates(Direction.S, bottomLeft.widthCoordinate(), Direction.W, midLength),
+            new GpsCoordinates(Direction.N, midWidth, Direction.E, topRight.lengthCoordinate()));
+      }
+      case NORTH_EAST -> {
+        return new Rectangle(
+            new GpsCoordinates(Direction.S, midWidth, Direction.W, midLength),
+            new GpsCoordinates(
+                Direction.N,
+                topRight.widthCoordinate(),
+                Direction.E,
+                topRight.lengthCoordinate()));
+      }
+      case SOUTH_WEST -> {
+        return new Rectangle(
+            new GpsCoordinates(
+                Direction.S, bottomLeft.widthCoordinate(), Direction.W, bottomLeft.lengthCoordinate()),
+            new GpsCoordinates(Direction.N, midWidth, Direction.E, midLength));
+      }
+      case SOUTH_EAST -> {
+        return new Rectangle(
+            new GpsCoordinates(Direction.S, midWidth, Direction.W, bottomLeft.lengthCoordinate()),
+            new GpsCoordinates(Direction.N, topRight.widthCoordinate(), Direction.E, midLength));
+      }
+      default -> throw new IllegalArgumentException(
+          String.format("Invalid direction %d in generateChildShape", quadrant.ordinal()));
+    }
   }
 
   public int getChildrenSize() {

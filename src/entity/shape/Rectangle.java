@@ -33,8 +33,8 @@ public class Rectangle {
   @Override
   public String toString() {
     return "Rectangle{" +
-            "firstPoint=" + firstPoint +
-            ", secondPoint=" + secondPoint +
+            "firstPoint=" + String.format("[%f, %f]", firstPoint.widthCoordinate(), firstPoint.lengthCoordinate()) +
+            ", secondPoint=" + String.format("[%f, %f]", secondPoint.widthCoordinate(), secondPoint.lengthCoordinate()) +
             ", width=" + width +
             ", length=" + length +
             '}';
