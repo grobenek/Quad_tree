@@ -5,7 +5,7 @@ package entity.shape;
  * @param length E or W
  */
 public record GpsCoordinates(
-    char width, double widthCoordinate, char length, double lengthCoordinate) {
+        Direction width, double widthCoordinate, Direction length, double lengthCoordinate) {
 
   @Override
   public String toString() {
