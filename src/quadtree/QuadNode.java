@@ -12,23 +12,17 @@ public class QuadNode<T> {
   private final QuadNode<T>[] children;
   private final Rectangle shape;
   private final List<T> items;
-
-  public QuadNode(QuadNode<T>[] children, Rectangle shape, List<T> items) {
-    this.children = children;
-    this.shape = shape;
-    this.items = items;
-  }
-
-  public QuadNode(QuadNode<T>[] children, Rectangle shape) {
-    this.children = children;
-    this.shape = shape;
-    this.items = new ArrayList<>();
-  }
-
   public QuadNode(Rectangle shape) {
     this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
     this.shape = shape;
     this.items = new ArrayList<>();
+  }
+
+  public QuadNode(T data, Rectangle shape) {
+    this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
+    this.shape = shape;
+    this.items = new ArrayList<>();
+    items.add(data);
   }
 
   public T getItem(int index) {
@@ -142,6 +136,79 @@ public class QuadNode<T> {
     }
 
     return notNullChildrenCounter;
+  }
+
+  /**
+   * Checks for shape presence in quadrant. Returns null if it is in multiple quadrants
+   *
+   * @param shapeToChooseQuadrantFor shape to check
+   * @return quadrant where shape is in or null if it is in multiple quadrants
+   */
+  public Quadrant getQuadrantOfShape(Rectangle shapeToChooseQuadrantFor) {
+    GpsCoordinates bottomLeftPoint = shapeToChooseQuadrantFor.getFirstPoint();
+    GpsCoordinates topRightPoint = shapeToChooseQuadrantFor.getSecondPoint();
+
+    if (chekForPresenceInNorthWestQuadrant(bottomLeftPoint, topRightPoint)) {
+      return Quadrant.NORTH_WEST;
+    }
+    if (checkForPresenceInNorthEastQuadrant(bottomLeftPoint, topRightPoint)) {
+      return Quadrant.NORTH_EAST;
+    }
+    if (checkForPresenceInSouthWestQuadrant(bottomLeftPoint, topRightPoint)) {
+      return Quadrant.SOUTH_WEST;
+    }
+    if (checkForPresenceInSouthEastQuadrant(bottomLeftPoint, topRightPoint)) {
+      return Quadrant.SOUTH_EAST;
+    }
+    return null;
+  }
+
+  private boolean checkForPresenceInSouthEastQuadrant(
+      GpsCoordinates bottomLeftPoint, GpsCoordinates topRightPoint) {
+    return ((bottomLeftPoint.widthCoordinate() > shape.getHalfWidth()
+            && bottomLeftPoint.widthCoordinate() < shape.getSecondPoint().widthCoordinate()
+            && (bottomLeftPoint.lengthCoordinate() > shape.getFirstPoint().lengthCoordinate()
+                && bottomLeftPoint.lengthCoordinate() < shape.getHalfLength()))
+        && (topRightPoint.widthCoordinate() > shape.getHalfWidth()
+            && topRightPoint.widthCoordinate() < shape.getSecondPoint().widthCoordinate()
+            && (topRightPoint.lengthCoordinate() > shape.getFirstPoint().lengthCoordinate()
+                && topRightPoint.lengthCoordinate() < shape.getHalfLength())));
+  }
+
+  private boolean checkForPresenceInSouthWestQuadrant(
+      GpsCoordinates bottomLeftPoint, GpsCoordinates topRightPoint) {
+    return ((bottomLeftPoint.widthCoordinate() > shape.getFirstPoint().widthCoordinate()
+            && bottomLeftPoint.widthCoordinate() < shape.getHalfWidth()
+            && (bottomLeftPoint.lengthCoordinate() > shape.getFirstPoint().lengthCoordinate()
+                && bottomLeftPoint.lengthCoordinate() < shape.getHalfLength()))
+        && (topRightPoint.widthCoordinate() > shape.getFirstPoint().widthCoordinate()
+            && topRightPoint.widthCoordinate() < shape.getHalfWidth()
+            && (topRightPoint.lengthCoordinate() > shape.getFirstPoint().lengthCoordinate()
+                && topRightPoint.lengthCoordinate() < shape.getHalfLength())));
+  }
+
+  private boolean checkForPresenceInNorthEastQuadrant(
+      GpsCoordinates bottomLeftPoint, GpsCoordinates topRightPoint) {
+    return ((bottomLeftPoint.widthCoordinate() > shape.getHalfWidth()
+                && bottomLeftPoint.widthCoordinate() < shape.getSecondPoint().widthCoordinate())
+            && (bottomLeftPoint.lengthCoordinate() > shape.getHalfLength()
+                && bottomLeftPoint.lengthCoordinate() < shape.getSecondPoint().lengthCoordinate()))
+        && ((topRightPoint.widthCoordinate() > shape.getHalfWidth()
+                && topRightPoint.widthCoordinate() < shape.getSecondPoint().widthCoordinate())
+            && (topRightPoint.lengthCoordinate() > shape.getHalfLength()
+                && topRightPoint.lengthCoordinate() < shape.getSecondPoint().lengthCoordinate()));
+  }
+
+  private boolean chekForPresenceInNorthWestQuadrant(
+      GpsCoordinates bottomLeftPoint, GpsCoordinates topRightPoint) {
+    return ((bottomLeftPoint.widthCoordinate() > shape.getFirstPoint().widthCoordinate()
+                && bottomLeftPoint.widthCoordinate() < shape.getHalfWidth())
+            && (bottomLeftPoint.lengthCoordinate() > shape.getHalfLength()
+                && bottomLeftPoint.lengthCoordinate() < shape.getSecondPoint().lengthCoordinate()))
+        && ((topRightPoint.widthCoordinate() > shape.getFirstPoint().widthCoordinate()
+                && topRightPoint.widthCoordinate() < shape.getHalfWidth())
+            && (topRightPoint.lengthCoordinate() > shape.getHalfLength()
+                && topRightPoint.lengthCoordinate() < shape.getSecondPoint().lengthCoordinate()));
   }
 
   @Override
