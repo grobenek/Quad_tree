@@ -98,8 +98,8 @@ public class QuadNode<T> {
     GpsCoordinates bottomLeft = shape.getFirstPoint();
     GpsCoordinates topRight = shape.getSecondPoint();
 
-    double midWidth = (bottomLeft.widthCoordinate() + topRight.widthCoordinate()) / 2;
-    double midLength = (bottomLeft.lengthCoordinate() + topRight.lengthCoordinate()) / 2;
+    double midWidth = shape.getHalfWidth();
+    double midLength = shape.getHalfLength();
 
     switch (quadrant) {
       case NORTH_WEST -> {

@@ -6,12 +6,19 @@ public class Rectangle {
   private final double width;
   private final double length;
 
+  private final double halfWidth;
+  private final double halfLength;
+
   public Rectangle(GpsCoordinates firstPoint, GpsCoordinates secondPoint) {
     this.firstPoint = firstPoint;
     this.secondPoint = secondPoint;
 
     this.width = Math.abs(firstPoint.widthCoordinate() - secondPoint.widthCoordinate());
     this.length = Math.abs(firstPoint.lengthCoordinate() - secondPoint.lengthCoordinate());
+
+    this.halfWidth = (this.firstPoint.widthCoordinate() + this.secondPoint.widthCoordinate()) / 2;
+    this.halfLength =
+        (this.firstPoint.lengthCoordinate() + this.secondPoint.lengthCoordinate()) / 2;
   }
 
   public GpsCoordinates getFirstPoint() {
@@ -28,6 +35,14 @@ public class Rectangle {
 
   public double getLength() {
     return length;
+  }
+
+  public double getHalfWidth() {
+    return halfWidth;
+  }
+
+  public double getHalfLength() {
+    return halfLength;
   }
 
   @Override
