@@ -32,11 +32,15 @@ public class Rectangle {
 
   @Override
   public String toString() {
-    return "Rectangle{" +
-            "firstPoint=" + String.format("[%f, %f]", firstPoint.widthCoordinate(), firstPoint.lengthCoordinate()) +
-            ", secondPoint=" + String.format("[%f, %f]", secondPoint.widthCoordinate(), secondPoint.lengthCoordinate()) +
-            ", width=" + width +
-            ", length=" + length +
-            '}';
+    return "Rectangle{"
+        + "firstPoint="
+        + String.format("[%f, %f]", firstPoint.widthCoordinate(), firstPoint.lengthCoordinate())
+        + ", secondPoint="
+        + String.format("[%f, %f]", secondPoint.widthCoordinate(), secondPoint.lengthCoordinate())
+        + ", width="
+        + width
+        + ", length="
+        + length
+        + '}';
   }
 }

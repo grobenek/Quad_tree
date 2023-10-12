@@ -3,7 +3,6 @@ package quadtree;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,38 +61,18 @@ public class QuadNode<T> {
     return children;
   }
 
-  public QuadNode<T> getChild(int index) {
-    if (index < 0 || index > MAX_CHILDREN - 1) {
-      return null;
-    }
-
-    return children[index];
-  }
-
   public QuadNode<T> getChild(Quadrant quadrant) {
     if (quadrant == null) {
-      return null;
+      throw new IllegalArgumentException("Cannot get child, because null is not valid direction!");
     }
 
     return children[quadrant.ordinal()];
   }
 
-  public void addChild(QuadNode<T> child, Quadrant quadrant) {
+  private void addChild(QuadNode<T> child, Quadrant quadrant) {
     checkForExistingChildrenAtDirection(quadrant);
 
     children[quadrant.ordinal()] = child;
-  }
-
-  public void addChild(QuadNode<T> child, int index) {
-    if (index < 0 || index > MAX_CHILDREN - 1) {
-      throw new IndexOutOfBoundsException(String.format("Index %d is out of bounds!", index));
-    }
-
-    if (children[index] != null) {
-      throw new IllegalStateException(String.format("Child at index %d already exists!", index));
-    }
-
-    children[index] = child;
   }
 
   public void generateChild(Quadrant quadrant) {
@@ -132,15 +111,15 @@ public class QuadNode<T> {
         return new Rectangle(
             new GpsCoordinates(Direction.S, midWidth, Direction.W, midLength),
             new GpsCoordinates(
-                Direction.N,
-                topRight.widthCoordinate(),
-                Direction.E,
-                topRight.lengthCoordinate()));
+                Direction.N, topRight.widthCoordinate(), Direction.E, topRight.lengthCoordinate()));
       }
       case SOUTH_WEST -> {
         return new Rectangle(
             new GpsCoordinates(
-                Direction.S, bottomLeft.widthCoordinate(), Direction.W, bottomLeft.lengthCoordinate()),
+                Direction.S,
+                bottomLeft.widthCoordinate(),
+                Direction.W,
+                bottomLeft.lengthCoordinate()),
             new GpsCoordinates(Direction.N, midWidth, Direction.E, midLength));
       }
       case SOUTH_EAST -> {
@@ -154,7 +133,15 @@ public class QuadNode<T> {
   }
 
   public int getChildrenSize() {
-    return children.length;
+    int notNullChildrenCounter = 0;
+
+    for (QuadNode<T> child : children) {
+      if (child != null) {
+        notNullChildrenCounter++;
+      }
+    }
+
+    return notNullChildrenCounter;
   }
 
   @Override
