@@ -3,7 +3,6 @@ package quadtree;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -132,15 +131,15 @@ public class QuadNode<T> {
         return new Rectangle(
             new GpsCoordinates(Direction.S, midWidth, Direction.W, midLength),
             new GpsCoordinates(
-                Direction.N,
-                topRight.widthCoordinate(),
-                Direction.E,
-                topRight.lengthCoordinate()));
+                Direction.N, topRight.widthCoordinate(), Direction.E, topRight.lengthCoordinate()));
       }
       case SOUTH_WEST -> {
         return new Rectangle(
             new GpsCoordinates(
-                Direction.S, bottomLeft.widthCoordinate(), Direction.W, bottomLeft.lengthCoordinate()),
+                Direction.S,
+                bottomLeft.widthCoordinate(),
+                Direction.W,
+                bottomLeft.lengthCoordinate()),
             new GpsCoordinates(Direction.N, midWidth, Direction.E, midLength));
       }
       case SOUTH_EAST -> {
