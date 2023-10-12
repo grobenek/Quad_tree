@@ -9,4 +9,9 @@ public class Property {
   private String description;
   private List<Parcel> parcels;
   private GpsCoordinates[] gpsCoordinates;
+
+  public Property(int registerNumber, String description) {
+    this.registerNumber = registerNumber;
+    this.description = description;
+  }
 }
