@@ -7,22 +7,34 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class QuadNode<T> {
+public class QuadNode<T extends IShapeData> {
   public static final int MAX_CHILDREN = 4;
   private final QuadNode<T>[] children;
+  private QuadNode<T> parent;
   private final Rectangle shape;
   private final List<T> items;
   public QuadNode(Rectangle shape) {
     this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
     this.shape = shape;
     this.items = new ArrayList<>();
+    this.parent = null;
   }
 
   public QuadNode(T data, Rectangle shape) {
     this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
     this.shape = shape;
     this.items = new ArrayList<>();
+    this.parent = null;
     items.add(data);
+  }
+
+  public QuadNode<T> getParent() {
+    return parent;
+  }
+
+  public QuadNode<T> setParent(QuadNode<T> parent) {
+    this.parent = parent;
+    return this;
   }
 
   public T getItem(int index) {
@@ -35,8 +47,9 @@ public class QuadNode<T> {
     return indexOfFirstItem != -1 ? items.get(indexOfFirstItem) : null;
   }
 
-  public void addItem(T item) {
+  public QuadNode<T> addItem(T item) {
     items.add(item);
+    return this;
   }
 
   public int getItemsSize() {
@@ -69,11 +82,24 @@ public class QuadNode<T> {
     children[quadrant.ordinal()] = child;
   }
 
-  public void generateChild(Quadrant quadrant) {
+  public QuadNode<T> generateChild(Quadrant quadrant) {
     checkForExistingChildrenAtDirection(quadrant);
 
     addChild(new QuadNode<>(generateChildShape(quadrant)), quadrant);
+    getChild(quadrant).setParent(this);
+    return this;
   }
+
+  public void generateChildren(){
+    int childrenSize = getChildrenSize();
+    if (childrenSize != 0){
+      throw new IllegalStateException(String.format("Cannot genereate new children, because %d children already exist!", childrenSize));
+    }
+
+    for (Quadrant quadrant : Quadrant.values()) {
+        this.generateChild(quadrant);
+    }
+}
 
   private void checkForExistingChildrenAtDirection(Quadrant quadrant) {
     if (this.children[quadrant.ordinal()] != null) {
@@ -142,11 +168,15 @@ public class QuadNode<T> {
    * Checks for shape presence in quadrant. Returns null if it is in multiple quadrants
    *
    * @param shapeToChooseQuadrantFor shape to check
-   * @return quadrant where shape is in or null if it is in multiple quadrants
+   * @return quadrant where shape is in or null if it is in multiple quadrants or equals quadrant
    */
   public Quadrant getQuadrantOfShape(Rectangle shapeToChooseQuadrantFor) {
     GpsCoordinates bottomLeftPoint = shapeToChooseQuadrantFor.getFirstPoint();
     GpsCoordinates topRightPoint = shapeToChooseQuadrantFor.getSecondPoint();
+
+    if (shapeToChooseQuadrantFor.equals(shape)){
+      return null;
+    }
 
     if (chekForPresenceInNorthWestQuadrant(bottomLeftPoint, topRightPoint)) {
       return Quadrant.NORTH_WEST;

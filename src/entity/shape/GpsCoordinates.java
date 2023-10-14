@@ -8,6 +8,19 @@ public record GpsCoordinates(
     Direction width, double widthCoordinate, Direction length, double lengthCoordinate) {
 
   @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof GpsCoordinates)) {
+      return false;
+    }
+
+    GpsCoordinates casted = (GpsCoordinates) obj;
+    return ((casted.widthCoordinate == widthCoordinate)
+        && (casted.lengthCoordinate == lengthCoordinate)
+        && (casted.width.getDirection() == width.getDirection())
+        && (casted.length.getDirection() == length.getDirection()));
+  }
+
+  @Override
   public String toString() {
     return "GpsCoordinates{"
         + "width="

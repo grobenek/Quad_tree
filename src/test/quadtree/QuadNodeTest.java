@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import quadtree.QuadNode;
 import quadtree.Quadrant;
+import test.IntegerShape;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class QuadNodeTest {
 
-  private QuadNode<Integer> baseIntegerQuadNode;
+  private QuadNode<IntegerShape> baseIntegerQuadNode;
   private QuadNode<Property> basePropertyQuadNode;
   private Rectangle quadNodeShape;
 
@@ -36,12 +37,17 @@ class QuadNodeTest {
     assertNotNull(basePropertyQuadNode);
 
     for (int i = 0; i < 5; i++) {
-      baseIntegerQuadNode.addItem(i);
+      baseIntegerQuadNode.addItem(
+          new IntegerShape(
+              i,
+              new Rectangle(
+                  new GpsCoordinates(Direction.S, i, Direction.W, i),
+                  new GpsCoordinates(Direction.S, i, Direction.W, i))));
     }
 
-    assertEquals(0, baseIntegerQuadNode.getItem(0));
-    assertEquals(2, baseIntegerQuadNode.getItem(2));
-    assertEquals(4, baseIntegerQuadNode.getItem(4));
+    assertEquals(0, baseIntegerQuadNode.getItem(0).getData());
+    assertEquals(2, baseIntegerQuadNode.getItem(2).getData());
+    assertEquals(4, baseIntegerQuadNode.getItem(4).getData());
 
     List<Property> propertyList = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
@@ -61,7 +67,12 @@ class QuadNodeTest {
 
     for (int i = 0; i < 5; i++) {
       Property property = new Property(i, String.valueOf(i));
-      baseIntegerQuadNode.addItem(i);
+      baseIntegerQuadNode.addItem(
+          new IntegerShape(
+              i,
+              new Rectangle(
+                  new GpsCoordinates(Direction.S, i, Direction.W, i),
+                  new GpsCoordinates(Direction.S, i, Direction.W, i))));
       basePropertyQuadNode.addItem(property);
     }
 
@@ -80,12 +91,16 @@ class QuadNodeTest {
       Property property = new Property(i, String.valueOf(i));
       propertyList.add(property);
       integerList.add(i);
-      baseIntegerQuadNode.addItem(i);
+      baseIntegerQuadNode.addItem(new IntegerShape(
+              i,
+              new Rectangle(
+                      new GpsCoordinates(Direction.S, i, Direction.W, i),
+                      new GpsCoordinates(Direction.S, i, Direction.W, i))));
       basePropertyQuadNode.addItem(property);
     }
 
     assertEquals(propertyList, basePropertyQuadNode.getAllItems());
-    assertEquals(integerList, baseIntegerQuadNode.getAllItems());
+    assertEquals(integerList, baseIntegerQuadNode.getAllItems().stream().map(IntegerShape::getData).toList());
   }
 
   @Test
@@ -104,10 +119,10 @@ class QuadNodeTest {
     baseIntegerQuadNode.generateChild(Quadrant.NORTH_WEST);
     baseIntegerQuadNode.generateChild(Quadrant.NORTH_EAST);
 
-    QuadNode<Integer>[] quadNodeChildren = baseIntegerQuadNode.getChildren();
+    QuadNode<IntegerShape>[] quadNodeChildren = baseIntegerQuadNode.getChildren();
 
     int counter = 0;
-    for (QuadNode<Integer> quadNodeChild : quadNodeChildren) {
+    for (QuadNode<IntegerShape> quadNodeChild : quadNodeChildren) {
       if (quadNodeChild != null) {
         counter++;
       }
@@ -193,7 +208,7 @@ class QuadNodeTest {
                         .getSecondPoint()
                         .lengthCoordinate())));
 
-    QuadNode<Integer> baseNodeNorthEastChild = baseIntegerQuadNode.getChild(Quadrant.NORTH_EAST);
+    QuadNode<IntegerShape> baseNodeNorthEastChild = baseIntegerQuadNode.getChild(Quadrant.NORTH_EAST);
     baseNodeNorthEastChild.generateChild(Quadrant.SOUTH_WEST);
 
     assertTrue(

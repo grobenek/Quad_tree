@@ -46,6 +46,17 @@ public class Rectangle {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Rectangle)) {
+      return false;
+    }
+    Rectangle castedObj = (Rectangle) obj;
+
+    return (castedObj.getFirstPoint().equals(firstPoint)
+        && castedObj.getSecondPoint().equals(secondPoint));
+  }
+
+  @Override
   public String toString() {
     return "Rectangle{"
         + "firstPoint="
