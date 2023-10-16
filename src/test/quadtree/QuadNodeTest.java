@@ -1,20 +1,18 @@
 package test.quadtree;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import entity.Property;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import quadtree.QuadNode;
 import quadtree.Quadrant;
 import test.IntegerShape;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class QuadNodeTest {
 
@@ -91,16 +89,18 @@ class QuadNodeTest {
       Property property = new Property(i, String.valueOf(i));
       propertyList.add(property);
       integerList.add(i);
-      baseIntegerQuadNode.addItem(new IntegerShape(
+      baseIntegerQuadNode.addItem(
+          new IntegerShape(
               i,
               new Rectangle(
-                      new GpsCoordinates(Direction.S, i, Direction.W, i),
-                      new GpsCoordinates(Direction.S, i, Direction.W, i))));
+                  new GpsCoordinates(Direction.S, i, Direction.W, i),
+                  new GpsCoordinates(Direction.S, i, Direction.W, i))));
       basePropertyQuadNode.addItem(property);
     }
 
-    assertEquals(propertyList, basePropertyQuadNode.getAllItems());
-    assertEquals(integerList, baseIntegerQuadNode.getAllItems().stream().map(IntegerShape::getData).toList());
+    assertEquals(propertyList, basePropertyQuadNode.getItems());
+    assertEquals(
+        integerList, baseIntegerQuadNode.getItems().stream().map(IntegerShape::getData).toList());
   }
 
   @Test
@@ -208,7 +208,8 @@ class QuadNodeTest {
                         .getSecondPoint()
                         .lengthCoordinate())));
 
-    QuadNode<IntegerShape> baseNodeNorthEastChild = baseIntegerQuadNode.getChild(Quadrant.NORTH_EAST);
+    QuadNode<IntegerShape> baseNodeNorthEastChild =
+        baseIntegerQuadNode.getChild(Quadrant.NORTH_EAST);
     baseNodeNorthEastChild.generateChild(Quadrant.SOUTH_WEST);
 
     assertTrue(
@@ -251,31 +252,45 @@ class QuadNodeTest {
             new GpsCoordinates(Direction.S, 3.21, Direction.W, 9.99),
             new GpsCoordinates(Direction.N, 4.1, Direction.E, 6.156));
 
+    IntegerShape northWestInteger = new IntegerShape(0, northWestShape);
+    IntegerShape northWestInteger2 = new IntegerShape(0, northWestShape);
+
     Rectangle northEastShape =
         new Rectangle(
             new GpsCoordinates(Direction.S, 8.641, Direction.W, 6.1),
             new GpsCoordinates(Direction.N, 9.99, Direction.E, 7.2));
+
+    IntegerShape northEastInteger = new IntegerShape(0, northEastShape);
 
     Rectangle southWestShape =
         new Rectangle(
             new GpsCoordinates(Direction.S, 2.6, Direction.W, 2.43),
             new GpsCoordinates(Direction.N, 3.89, Direction.E, 1.5));
 
+    IntegerShape southWestInteger = new IntegerShape(0, southWestShape);
+
     Rectangle southEastShape =
         new Rectangle(
             new GpsCoordinates(Direction.S, 6.1, Direction.W, 2.43),
             new GpsCoordinates(Direction.N, 9.99, Direction.E, 3.51221));
+
+    IntegerShape southEastInteger = new IntegerShape(0, southEastShape);
 
     Rectangle multipleQuadrantsShape =
         new Rectangle(
             new GpsCoordinates(Direction.S, 2.5, Direction.W, 9.5),
             new GpsCoordinates(Direction.N, 9.99, Direction.E, 3.51221));
 
-    assertEquals(Quadrant.NORTH_WEST, baseIntegerQuadNode.getQuadrantOfShape(northWestShape));
-    assertEquals(Quadrant.NORTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(northEastShape));
-    assertEquals(Quadrant.SOUTH_WEST, baseIntegerQuadNode.getQuadrantOfShape(southWestShape));
-    assertEquals(Quadrant.SOUTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(southEastShape));
+    IntegerShape multipleQuadrantsInteger = new IntegerShape(0, multipleQuadrantsShape);
 
-    assertNull(baseIntegerQuadNode.getQuadrantOfShape(multipleQuadrantsShape));
+    assertEquals(Quadrant.NORTH_WEST, baseIntegerQuadNode.getQuadrantOfShape(northWestInteger));
+    assertEquals(Quadrant.NORTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(northEastInteger));
+    assertEquals(Quadrant.SOUTH_WEST, baseIntegerQuadNode.getQuadrantOfShape(southWestInteger));
+    assertEquals(Quadrant.SOUTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(southEastInteger));
+
+    assertNull(baseIntegerQuadNode.getQuadrantOfShape(multipleQuadrantsInteger));
+
+    baseIntegerQuadNode.addItem(northWestInteger);
+    assertNull(baseIntegerQuadNode.getQuadrantOfShape(northWestInteger2));
   }
 }

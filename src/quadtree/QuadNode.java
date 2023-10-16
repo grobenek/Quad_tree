@@ -11,8 +11,10 @@ public class QuadNode<T extends IShapeData> {
   public static final int MAX_CHILDREN = 4;
   private final QuadNode<T>[] children;
   private QuadNode<T> parent;
+  private int height;
   private final Rectangle shape;
   private final List<T> items;
+
   public QuadNode(Rectangle shape) {
     this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
     this.shape = shape;
@@ -26,6 +28,15 @@ public class QuadNode<T extends IShapeData> {
     this.items = new ArrayList<>();
     this.parent = null;
     items.add(data);
+  }
+
+  public int getHeight() {
+    return height;
+  }
+
+  public QuadNode<T> setHeight(int height) {
+    this.height = height;
+    return this;
   }
 
   public QuadNode<T> getParent() {
@@ -56,7 +67,7 @@ public class QuadNode<T extends IShapeData> {
     return items.size();
   }
 
-  public List<T> getAllItems() {
+  public List<T> getItems() {
     return items;
   }
 
@@ -82,35 +93,44 @@ public class QuadNode<T extends IShapeData> {
     children[quadrant.ordinal()] = child;
   }
 
+  /**
+   * Generate new child for given quadrant and return refference to it
+   *
+   * @param quadrant quadrant of child
+   * @return generated child
+   */
   public QuadNode<T> generateChild(Quadrant quadrant) {
     checkForExistingChildrenAtDirection(quadrant);
 
     addChild(new QuadNode<>(generateChildShape(quadrant)), quadrant);
-    getChild(quadrant).setParent(this);
-    return this;
+    getChild(quadrant).setParent(this).setHeight(getHeight() + 1);
+    return getChild(quadrant);
   }
 
-  public void generateChildren(){
+  public void generateChildren() {
     int childrenSize = getChildrenSize();
-    if (childrenSize != 0){
-      throw new IllegalStateException(String.format("Cannot genereate new children, because %d children already exist!", childrenSize));
+    if (childrenSize != 0) {
+      throw new IllegalStateException(
+          String.format(
+              "Cannot genereate new children, because %d children already exist!", childrenSize));
     }
 
     for (Quadrant quadrant : Quadrant.values()) {
-        this.generateChild(quadrant);
+      this.generateChild(quadrant);
     }
-}
+  }
 
   private void checkForExistingChildrenAtDirection(Quadrant quadrant) {
     if (this.children[quadrant.ordinal()] != null) {
       throw new IllegalStateException(
           String.format(
-              "Child at direction %d already exists at [%f, %f], [%f, %f]!",
+              "Child at direction %d already exists at [%f, %f], [%f, %f] for node in height %d!",
               quadrant.ordinal(),
               shape.getFirstPoint().widthCoordinate(),
               shape.getFirstPoint().lengthCoordinate(),
               shape.getSecondPoint().widthCoordinate(),
-              shape.getSecondPoint().lengthCoordinate()));
+              shape.getSecondPoint().lengthCoordinate(),
+              height));
     }
   }
 
@@ -167,14 +187,14 @@ public class QuadNode<T extends IShapeData> {
   /**
    * Checks for shape presence in quadrant. Returns null if it is in multiple quadrants
    *
-   * @param shapeToChooseQuadrantFor shape to check
+   * @param data shape to check
    * @return quadrant where shape is in or null if it is in multiple quadrants or equals quadrant
    */
-  public Quadrant getQuadrantOfShape(Rectangle shapeToChooseQuadrantFor) {
-    GpsCoordinates bottomLeftPoint = shapeToChooseQuadrantFor.getFirstPoint();
-    GpsCoordinates topRightPoint = shapeToChooseQuadrantFor.getSecondPoint();
+  public Quadrant getQuadrantOfShape(IShapeData data) {
+    GpsCoordinates bottomLeftPoint = data.getShapeOfData().getFirstPoint();
+    GpsCoordinates topRightPoint = data.getShapeOfData().getSecondPoint();
 
-    if (shapeToChooseQuadrantFor.equals(shape)){
+    if (data.getShapeOfData().equals(shape) || compareItemsShapeWithNew(data)) {
       return null;
     }
 
@@ -191,6 +211,15 @@ public class QuadNode<T extends IShapeData> {
       return Quadrant.SOUTH_EAST;
     }
     return null;
+  }
+
+  private boolean compareItemsShapeWithNew(IShapeData data) {
+    for (IShapeData item : items) {
+      if (item.getShapeOfData().equals(data.getShapeOfData())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean checkForPresenceInSouthEastQuadrant(
@@ -251,5 +280,21 @@ public class QuadNode<T extends IShapeData> {
         + ", items="
         + items
         + '}';
+  }
+
+  public void removeItem(T item) {
+    items.remove(item);
+  }
+
+  public void removeAllItems() {
+    items.clear();
+  }
+
+  public boolean isLeaf() {
+    return getChildrenSize() == 0;
+  }
+
+  public void addAllItems(List<T> itemsToAdd) {
+    items.addAll(itemsToAdd);
   }
 }

@@ -19,4 +19,11 @@ public class IntegerShape implements IShapeData {
     public Rectangle getShapeOfData() {
         return shape;
     }
+
+    @Override
+    public String toString() {
+        return "IntegerShape{" +
+                "data=" + data +
+                '}';
+    }
 }
