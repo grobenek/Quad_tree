@@ -12,8 +12,18 @@ public class Rectangle implements IShapeData {
   private final double halfLength;
 
   public Rectangle(GpsCoordinates firstPoint, GpsCoordinates secondPoint) {
-    this.firstPoint = firstPoint;
-    this.secondPoint = secondPoint;
+    this.firstPoint =
+        new GpsCoordinates(
+            Direction.S,
+            Math.min(firstPoint.widthCoordinate(), secondPoint.widthCoordinate()),
+            Direction.W,
+            Math.min(firstPoint.lengthCoordinate(), secondPoint.lengthCoordinate()));
+    this.secondPoint =
+        new GpsCoordinates(
+            Direction.S,
+            Math.max(firstPoint.widthCoordinate(), secondPoint.widthCoordinate()),
+            Direction.W,
+            Math.max(firstPoint.lengthCoordinate(), secondPoint.lengthCoordinate()));
 
     this.width = Math.abs(firstPoint.widthCoordinate() - secondPoint.widthCoordinate());
     this.length = Math.abs(firstPoint.lengthCoordinate() - secondPoint.lengthCoordinate());

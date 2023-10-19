@@ -1,10 +1,8 @@
 package quadtree;
 
+import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class QuadTree<T extends IShapeData> {
   private final int MAX_HEIGHT;
@@ -26,7 +24,7 @@ public class QuadTree<T extends IShapeData> {
     return MAX_HEIGHT;
   }
 
-  public QuadNode<T> insert(T data) {
+  public void insert(T data) {
     Rectangle shape = data.getShapeOfData();
     if (shape == null) {
       throw new IllegalArgumentException("Shape of inserted data is null!");
@@ -41,11 +39,11 @@ public class QuadTree<T extends IShapeData> {
     if (root == null) {
       root = new QuadNode<>(data, shape);
       this.shape = shape;
-      return root;
+      return;
     }
 
     // finding right place for data
-    return findFreeParentForDataAndAddDataToNewChild(root, data);
+    findFreeParentForDataAndAddDataToNewChild(root, data);
   }
 
   private boolean isPoint(T data) {
@@ -59,9 +57,8 @@ public class QuadTree<T extends IShapeData> {
    *
    * @param startingPoint Node from which we look for suitable place
    * @param data data to be added
-   * @return Node where data was added
    */
-  private QuadNode<T> findFreeParentForDataAndAddDataToNewChild(QuadNode<T> startingPoint, T data) {
+  private void findFreeParentForDataAndAddDataToNewChild(QuadNode<T> startingPoint, T data) {
     if (startingPoint == null) {
       throw new IllegalArgumentException(
           "Cannot find free parent for data when startingPoint is null!");
@@ -73,14 +70,15 @@ public class QuadTree<T extends IShapeData> {
     // quadrant is null - add data to parent and end
     if (quadrantForDataToBePlaced == null) {
       startingPoint.addItem(data);
-      return startingPoint;
+      return;
     }
 
     QuadNode<T> possiblePlaceForData = parentOfPlace.getChild(quadrantForDataToBePlaced);
 
     // free place for data - generate child and add data and return
     if (possiblePlaceForData == null) {
-      return tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
+      tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
+      return;
     }
 
     // finding free place for items or until max height is reached
@@ -88,7 +86,7 @@ public class QuadTree<T extends IShapeData> {
     while (possiblePlaceForData != null) {
       if (heightCounter == MAX_HEIGHT) {
         possiblePlaceForData.addItem(data);
-        return possiblePlaceForData;
+        return;
       }
 
       parentOfPlace = possiblePlaceForData;
@@ -97,18 +95,17 @@ public class QuadTree<T extends IShapeData> {
       // quadrant is null - add data to parent and end
       if (quadrantForDataToBePlaced == null) {
         parentOfPlace.addItem(data);
-        return parentOfPlace;
+        return;
       }
 
       possiblePlaceForData = parentOfPlace.getChild(quadrantForDataToBePlaced);
       heightCounter++;
     }
-
     // free space for data
-    return tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
+    tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
   }
 
-  private QuadNode<T> tryToInsertOldDataIntoNewChildrenAndInsertNewData(
+  private void tryToInsertOldDataIntoNewChildrenAndInsertNewData(
       QuadNode<T> originalParent, T data) {
     Stack<T> stackOfItemsThatNeedSToBeReinserted = new Stack<>();
 
@@ -164,15 +161,13 @@ public class QuadTree<T extends IShapeData> {
         heightCounter++;
       }
     }
-
-    return null;
   }
 
   /**
    * Finds and returns all data that are within given shape
    *
    * @param shape shape where to search for data
-   * @return LinkedList with result data
+   * @return List with result data
    */
   public List<T> search(Rectangle shape) {
     if (shape == null) {
@@ -185,7 +180,6 @@ public class QuadTree<T extends IShapeData> {
               "Shape %s does not overlap with quad tree with root %s", shape, root.getShape()));
     }
 
-    List<T> result = new LinkedList<>();
     Stack<QuadNode<T>> nodesToProcess = new Stack<>();
     QuadNode<T> currentNode = root;
 
@@ -194,9 +188,11 @@ public class QuadTree<T extends IShapeData> {
             .filter(child -> child != null && child.doesOverlapWithRectangle(shape))
             .toList());
 
-    currentNode.getItems().stream()
-        .filter(item -> item.getShapeOfData().doesOverlapWithRectangle(shape))
-        .forEach(result::add);
+    List<T> result = // creating result list with first filtered items from root
+        new LinkedList<>(
+            currentNode.getItems().stream()
+                .filter(item -> item.getShapeOfData().doesOverlapWithRectangle(shape))
+                .toList());
 
     while (!nodesToProcess.empty()) {
       currentNode = nodesToProcess.pop();
@@ -220,22 +216,15 @@ public class QuadTree<T extends IShapeData> {
   }
 
   private boolean checkIfDataFitIntoRoot(T data) {
-    Rectangle shapeOfData = data.getShapeOfData();
-    return ((shapeOfData.getFirstPoint().widthCoordinate()
-                > root.getShape().getFirstPoint().widthCoordinate()
-            && shapeOfData.getFirstPoint().lengthCoordinate()
-                > root.getShape().getFirstPoint().lengthCoordinate()
-            && shapeOfData.getFirstPoint().widthCoordinate()
-                < root.getShape().getSecondPoint().widthCoordinate()
-            && shapeOfData.getFirstPoint().lengthCoordinate()
-                < root.getShape().getSecondPoint().lengthCoordinate())
-        && (shapeOfData.getSecondPoint().widthCoordinate()
-                < root.getShape().getSecondPoint().widthCoordinate()
-            && shapeOfData.getSecondPoint().lengthCoordinate()
-                < root.getShape().getSecondPoint().lengthCoordinate()
-            && shapeOfData.getSecondPoint().widthCoordinate()
-                > root.getShape().getFirstPoint().widthCoordinate()
-            && shapeOfData.getSecondPoint().lengthCoordinate()
-                > root.getShape().getFirstPoint().lengthCoordinate()));
+    GpsCoordinates firstPointOfData = data.getShapeOfData().getFirstPoint();
+    GpsCoordinates secondPointOfData = data.getShapeOfData().getSecondPoint();
+
+    GpsCoordinates thisFirstPoint = shape.getFirstPoint();
+    GpsCoordinates thisSecondPoint = shape.getSecondPoint();
+
+    return (firstPointOfData.widthCoordinate() >= thisFirstPoint.widthCoordinate()
+        && secondPointOfData.widthCoordinate() <= thisSecondPoint.widthCoordinate()
+        && firstPointOfData.lengthCoordinate() >= thisFirstPoint.lengthCoordinate()
+        && secondPointOfData.lengthCoordinate() <= thisSecondPoint.lengthCoordinate());
   }
 }

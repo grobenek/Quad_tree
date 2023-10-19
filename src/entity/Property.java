@@ -1,10 +1,8 @@
 package entity;
 
-import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
-import quadtree.IShapeData;
-
 import java.util.List;
+import quadtree.IShapeData;
 
 public class Property implements IShapeData {
   private int registerNumber;
@@ -26,5 +24,33 @@ public class Property implements IShapeData {
   @Override
   public Rectangle getShapeOfData() {
     return shape;
+  }
+
+  @Override
+  public String toString() {
+    return "Property{"
+        + "registerNumber="
+        + registerNumber
+        + ", description='"
+        + description
+        + '\''
+        + ", parcels="
+        + parcels
+        + ", shape="
+        + shape
+        + '}';
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Property)) {
+      return false;
+    }
+    Property castedObj = (Property) obj;
+
+    return (castedObj.description.equals(description)
+        && ((castedObj.parcels == null && parcels == null) || castedObj.parcels.equals(parcels))
+        && castedObj.registerNumber == registerNumber
+        && castedObj.shape.equals(shape));
   }
 }
