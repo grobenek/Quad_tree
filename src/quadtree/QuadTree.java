@@ -1,15 +1,25 @@
 package quadtree;
 
 import entity.shape.Rectangle;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 
 public class QuadTree<T extends IShapeData> {
   private final int MAX_HEIGHT;
+
+  private Rectangle shape;
   private QuadNode<T> root;
 
   public QuadTree(int maxHeight, Rectangle shape) {
     this.MAX_HEIGHT = maxHeight;
+    this.shape = shape;
     this.root = new QuadNode<>(shape);
+  }
+
+  public Rectangle getShape() {
+    return shape;
   }
 
   public int getMAX_HEIGHT() {
@@ -22,8 +32,15 @@ public class QuadTree<T extends IShapeData> {
       throw new IllegalArgumentException("Shape of inserted data is null!");
     }
 
+    if (!checkIfDataFitIntoRoot(data)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Data: %s does not fit into QuadTree with shape: %s", data, root.getShape()));
+    }
+
     if (root == null) {
       root = new QuadNode<>(data, shape);
+      this.shape = shape;
       return root;
     }
 
@@ -149,5 +166,76 @@ public class QuadTree<T extends IShapeData> {
     }
 
     return null;
+  }
+
+  /**
+   * Finds and returns all data that are within given shape
+   *
+   * @param shape shape where to search for data
+   * @return LinkedList with result data
+   */
+  public List<T> search(Rectangle shape) {
+    if (shape == null) {
+      throw new IllegalArgumentException("Cannot find any data for null shape!");
+    }
+
+    if (!root.doesOverlapWithRectangle(shape)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Shape %s does not overlap with quad tree with root %s", shape, root.getShape()));
+    }
+
+    List<T> result = new LinkedList<>();
+    Stack<QuadNode<T>> nodesToProcess = new Stack<>();
+    QuadNode<T> currentNode = root;
+
+    nodesToProcess.addAll(
+        Arrays.stream(currentNode.getChildren())
+            .filter(child -> child != null && child.doesOverlapWithRectangle(shape))
+            .toList());
+
+    currentNode.getItems().stream()
+        .filter(item -> item.getShapeOfData().doesOverlapWithRectangle(shape))
+        .forEach(result::add);
+
+    while (!nodesToProcess.empty()) {
+      currentNode = nodesToProcess.pop();
+      // add children for proccesing when they are overlapping with shape
+      nodesToProcess.addAll(
+          Arrays.stream(currentNode.getChildren())
+              .filter(child -> child != null && child.doesOverlapWithRectangle(shape))
+              .toList());
+
+      if (currentNode.getItemsSize() == 0) {
+        continue;
+      }
+
+      // add item within shape to result
+      currentNode.getItems().stream()
+          .filter(item -> item.getShapeOfData().doesOverlapWithRectangle(shape))
+          .forEach(result::add);
+    }
+
+    return result;
+  }
+
+  private boolean checkIfDataFitIntoRoot(T data) {
+    Rectangle shapeOfData = data.getShapeOfData();
+    return ((shapeOfData.getFirstPoint().widthCoordinate()
+                > root.getShape().getFirstPoint().widthCoordinate()
+            && shapeOfData.getFirstPoint().lengthCoordinate()
+                > root.getShape().getFirstPoint().lengthCoordinate()
+            && shapeOfData.getFirstPoint().widthCoordinate()
+                < root.getShape().getSecondPoint().widthCoordinate()
+            && shapeOfData.getFirstPoint().lengthCoordinate()
+                < root.getShape().getSecondPoint().lengthCoordinate())
+        && (shapeOfData.getSecondPoint().widthCoordinate()
+                < root.getShape().getSecondPoint().widthCoordinate()
+            && shapeOfData.getSecondPoint().lengthCoordinate()
+                < root.getShape().getSecondPoint().lengthCoordinate()
+            && shapeOfData.getSecondPoint().widthCoordinate()
+                > root.getShape().getFirstPoint().widthCoordinate()
+            && shapeOfData.getSecondPoint().lengthCoordinate()
+                > root.getShape().getFirstPoint().lengthCoordinate()));
   }
 }

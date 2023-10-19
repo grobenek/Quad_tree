@@ -297,4 +297,8 @@ public class QuadNode<T extends IShapeData> {
   public void addAllItems(List<T> itemsToAdd) {
     items.addAll(itemsToAdd);
   }
+
+  public boolean doesOverlapWithRectangle(Rectangle otherRectangle) {
+    return shape.doesOverlapWithRectangle(otherRectangle);
+  }
 }

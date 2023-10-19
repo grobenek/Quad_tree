@@ -1,6 +1,8 @@
 package entity.shape;
 
-public class Rectangle {
+import quadtree.IShapeData;
+
+public class Rectangle implements IShapeData {
   private final GpsCoordinates firstPoint;
   private final GpsCoordinates secondPoint;
   private final double width;
@@ -68,5 +70,17 @@ public class Rectangle {
         + ", length="
         + length
         + '}';
+  }
+
+  @Override
+  public Rectangle getShapeOfData() {
+    return this;
+  }
+
+  public boolean doesOverlapWithRectangle(Rectangle otherRectangle) {
+    return (Math.abs(this.getHalfWidth() - otherRectangle.getHalfWidth())
+            < (this.getWidth() + otherRectangle.getWidth()))
+        && (Math.abs(this.getHalfLength() - otherRectangle.getHalfLength())
+            < (this.getLength() + otherRectangle.getLength()));
   }
 }
