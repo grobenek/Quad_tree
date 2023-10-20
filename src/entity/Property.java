@@ -49,8 +49,10 @@ public class Property implements IShapeData {
     Property castedObj = (Property) obj;
 
     return (castedObj.description.equals(description)
-        && ((castedObj.parcels == null && parcels == null) || castedObj.parcels.equals(parcels))
-        && castedObj.registerNumber == registerNumber
-        && castedObj.shape.equals(shape));
+            && ((castedObj.parcels == null && parcels == null)
+                || (castedObj.parcels != null && castedObj.parcels.equals(parcels)))
+            && castedObj.registerNumber == registerNumber
+            && (castedObj.shape == null && shape == null)
+        || (castedObj.shape != null && castedObj.shape.equals(shape)));
   }
 }

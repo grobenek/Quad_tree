@@ -253,7 +253,6 @@ class QuadNodeTest {
             new GpsCoordinates(Direction.N, 4.1, Direction.E, 6.156));
 
     IntegerShape northWestInteger = new IntegerShape(0, northWestShape);
-    IntegerShape northWestInteger2 = new IntegerShape(0, northWestShape);
 
     Rectangle northEastShape =
         new Rectangle(
@@ -289,8 +288,5 @@ class QuadNodeTest {
     assertEquals(Quadrant.SOUTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(southEastInteger));
 
     assertNull(baseIntegerQuadNode.getQuadrantOfShape(multipleQuadrantsInteger));
-
-    baseIntegerQuadNode.addItem(northWestInteger);
-    assertNull(baseIntegerQuadNode.getQuadrantOfShape(northWestInteger2));
   }
 }

@@ -57,6 +57,10 @@ public class Rectangle implements IShapeData {
     return halfLength;
   }
 
+  public boolean isPoint() {
+    return firstPoint.equals(secondPoint);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof Rectangle)) {

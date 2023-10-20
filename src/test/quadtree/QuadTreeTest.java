@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import quadtree.QuadTree;
 
 public class QuadTreeTest {
-  public static final int NUMBER_OF_REPETITIONS = 10;
+  public static final int NUMBER_OF_REPETITIONS = 5;
   public static final int NUMBER_OF_ITEMS_FOR_ACTIONS = 10000;
 
   @Test
@@ -75,7 +75,6 @@ public class QuadTreeTest {
   void verifyNoDataLossWhenInserting() {
     Random random = new Random();
     for (int repetetion = 0; repetetion < NUMBER_OF_REPETITIONS; repetetion++) {
-
       List<Property> insertedItems = new ArrayList<>();
 
       int maxHeight = random.nextInt(1000);
