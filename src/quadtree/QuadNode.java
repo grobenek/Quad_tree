@@ -90,6 +90,14 @@ public class QuadNode<T extends IShapeData> {
     return children[quadrant.ordinal()];
   }
 
+  public void removeChild(Quadrant quadrant) {
+    if (quadrant == null) {
+      throw new IllegalArgumentException("Cannot remove child from quadrant: null!");
+    }
+
+    this.children[quadrant.ordinal()] = null;
+  }
+
   private void addChild(QuadNode<T> child, Quadrant quadrant) {
     checkForExistingChildrenAtDirection(quadrant);
 
@@ -186,9 +194,13 @@ public class QuadNode<T extends IShapeData> {
    * @param data shape to check
    * @return quadrant where shape is in or null if it is in multiple quadrants or equals quadrant
    */
-  public Quadrant getQuadrantOfShape(IShapeData data) {
+  public Quadrant getQuadrantOfShape(IShapeData data, boolean isChildOfCurrentNode) {
     GpsCoordinates bottomLeftPoint = data.getShapeOfData().getFirstPoint();
     GpsCoordinates topRightPoint = data.getShapeOfData().getSecondPoint();
+
+    if (isChildOfCurrentNode) {
+      return getChildsQuadrant(data);
+    }
 
     if (data.getShapeOfData().equals(shape)) {
       return null;
@@ -211,6 +223,19 @@ public class QuadNode<T extends IShapeData> {
     }
     if (checkForPresenceInSouthEastQuadrant(bottomLeftPoint, topRightPoint)) {
       return Quadrant.SOUTH_EAST;
+    }
+    return null;
+  }
+
+  private Quadrant getChildsQuadrant(IShapeData childToFind) {
+    for (int i = 0; i < children.length; i++) {
+      if (children[i] == null) {
+        continue;
+      }
+
+      if (children[i].getShape().equals(childToFind.getShapeOfData())) {
+        return Quadrant.values()[i];
+      }
     }
     return null;
   }
@@ -311,7 +336,7 @@ public class QuadNode<T extends IShapeData> {
   public String toString() {
     return "QuadNode{"
         + "children="
-        + Arrays.toString(children)
+        + Arrays.toString(Arrays.stream(children).map(child -> child == null ? 0 : 1).toArray())
         + ", gpsCoordinates="
         + shape
         + ", items="

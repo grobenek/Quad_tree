@@ -43,7 +43,7 @@ public class QuadTree<T extends IShapeData> {
     }
 
     // finding right place for data
-    findFreeParentForDataAndAddDataToNewChild(root, data);
+    findFreeParentForDataAndAddDataToNewChild(root, data, true);
   }
 
   private boolean isPoint(T data) {
@@ -58,51 +58,68 @@ public class QuadTree<T extends IShapeData> {
    * @param startingPoint Node from which we look for suitable place
    * @param data data to be added
    */
-  private void findFreeParentForDataAndAddDataToNewChild(QuadNode<T> startingPoint, T data) {
+  private QuadNode<T> findFreeParentForDataAndAddDataToNewChild(
+      QuadNode<T> startingPoint, T data, boolean insertNewData) {
     if (startingPoint == null) {
       throw new IllegalArgumentException(
           "Cannot find free parent for data when startingPoint is null!");
     }
 
     QuadNode<T> parentOfPlace = startingPoint;
-    Quadrant quadrantForDataToBePlaced = startingPoint.getQuadrantOfShape(data);
+    Quadrant quadrantForDataToBePlaced = startingPoint.getQuadrantOfShape(data, false);
 
     // quadrant is null - add data to parent and end
     if (quadrantForDataToBePlaced == null) {
-      startingPoint.addItem(data);
-      return;
+      if (insertNewData) {
+        startingPoint.addItem(data);
+        return null;
+      }
+      return startingPoint;
     }
 
     QuadNode<T> possiblePlaceForData = parentOfPlace.getChild(quadrantForDataToBePlaced);
 
     // free place for data - generate child and add data and return
     if (possiblePlaceForData == null) {
-      tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
-      return;
+      if (insertNewData) {
+        tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
+        return null;
+      }
+      return parentOfPlace;
     }
 
     // finding free place for items or until max height is reached
     int heightCounter = possiblePlaceForData.getHeight();
     while (possiblePlaceForData != null) {
       if (heightCounter == MAX_HEIGHT) {
-        possiblePlaceForData.addItem(data);
-        return;
+        if (insertNewData) {
+          possiblePlaceForData.addItem(data);
+          return null;
+        }
+        return possiblePlaceForData;
       }
 
       parentOfPlace = possiblePlaceForData;
-      quadrantForDataToBePlaced = parentOfPlace.getQuadrantOfShape(data);
+      quadrantForDataToBePlaced = parentOfPlace.getQuadrantOfShape(data, false);
 
       // quadrant is null - add data to parent and end
       if (quadrantForDataToBePlaced == null) {
-        parentOfPlace.addItem(data);
-        return;
+        if (insertNewData) {
+          parentOfPlace.addItem(data);
+          return null;
+        }
+        return parentOfPlace;
       }
 
       possiblePlaceForData = parentOfPlace.getChild(quadrantForDataToBePlaced);
       heightCounter++;
     }
     // free space for data
-    tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
+    if (insertNewData) {
+      tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
+      return null;
+    }
+    return parentOfPlace;
   }
 
   private void tryToInsertOldDataIntoNewChildrenAndInsertNewData(
@@ -119,7 +136,7 @@ public class QuadTree<T extends IShapeData> {
 
       QuadNode<T> parentOfPlace = originalParent;
       int heightCounter = parentOfPlace.getHeight();
-      Quadrant quadrantOfItem = parentOfPlace.getQuadrantOfShape(itemToWorkWith);
+      Quadrant quadrantOfItem = parentOfPlace.getQuadrantOfShape(itemToWorkWith, false);
 
       // item cannot be inserted deeper, adding to parent
       if (quadrantOfItem == null) {
@@ -139,7 +156,7 @@ public class QuadTree<T extends IShapeData> {
       // finding possible place for item
       while (true) {
         parentOfPlace = possiblePlaceForItem;
-        quadrantOfItem = parentOfPlace.getQuadrantOfShape(itemToWorkWith);
+        quadrantOfItem = parentOfPlace.getQuadrantOfShape(itemToWorkWith, false);
 
         // item cannot be inserted deeper, adding to parent
         if (quadrantOfItem == null) {
@@ -213,6 +230,83 @@ public class QuadTree<T extends IShapeData> {
     }
 
     return result;
+  }
+
+  public void deleteData(T data) {
+    if (data == null) {
+      throw new IllegalArgumentException("Cannot delete data: null!");
+    }
+
+    QuadNode<T> nodeOfChild = findFreeParentForDataAndAddDataToNewChild(root, data, false);
+
+    if (nodeOfChild == null) {
+      throw new IllegalStateException(String.format("Data %s not found in quadtree", data));
+    }
+
+    T foundData = nodeOfChild.getItem(data);
+
+    if (foundData == null) {
+      throw new IllegalStateException(
+          String.format("Data %s not found in area %s", data, nodeOfChild.getShape()));
+    }
+
+    nodeOfChild.removeItem(foundData);
+
+    // is leaf, but it is not empty
+    if (nodeOfChild.isLeaf() && nodeOfChild.getItemsSize() != 0) {
+      return;
+    }
+
+    // leaf is empty
+    // remove child from its parent
+    if (nodeOfChild.isLeaf() && nodeOfChild.getItemsSize() == 0) {
+      QuadNode<T> parentOfChild = nodeOfChild.getParent();
+
+      // parent is null - current node is root
+      if (parentOfChild == null) {
+        return;
+      }
+
+      Quadrant quadrantOfChild = parentOfChild.getQuadrantOfShape(nodeOfChild.getShape(), true);
+
+      if (quadrantOfChild == null) {
+        throw new IllegalStateException(
+            String.format(
+                "Quadrant for child: %s not found in parent %s", nodeOfChild, parentOfChild));
+      }
+
+      parentOfChild.removeChild(quadrantOfChild);
+
+      // has another child, cannot remove him
+      if (!parentOfChild.isLeaf()) {
+        return;
+      }
+
+      // parent has 0 children
+      // deleting empty parents
+      while (true) {
+        nodeOfChild = parentOfChild;
+        parentOfChild = nodeOfChild.getParent();
+
+        if (!parentOfChild.isLeaf()) {
+          return;
+        }
+
+        if (nodeOfChild.getItemsSize() != 0) {
+          return;
+        }
+
+        quadrantOfChild = parentOfChild.getQuadrantOfShape(nodeOfChild.getShape(), true);
+
+        if (quadrantOfChild == null) {
+          throw new IllegalStateException(
+              String.format(
+                  "Quadrant for child: %s not found in parent %s", nodeOfChild, parentOfChild));
+        }
+
+        parentOfChild.removeChild(quadrantOfChild);
+      }
+    }
   }
 
   private boolean checkIfDataFitIntoRoot(T data) {

@@ -282,11 +282,15 @@ class QuadNodeTest {
 
     IntegerShape multipleQuadrantsInteger = new IntegerShape(0, multipleQuadrantsShape);
 
-    assertEquals(Quadrant.NORTH_WEST, baseIntegerQuadNode.getQuadrantOfShape(northWestInteger));
-    assertEquals(Quadrant.NORTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(northEastInteger));
-    assertEquals(Quadrant.SOUTH_WEST, baseIntegerQuadNode.getQuadrantOfShape(southWestInteger));
-    assertEquals(Quadrant.SOUTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(southEastInteger));
+    assertEquals(
+        Quadrant.NORTH_WEST, baseIntegerQuadNode.getQuadrantOfShape(northWestInteger, false));
+    assertEquals(
+        Quadrant.NORTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(northEastInteger, false));
+    assertEquals(
+        Quadrant.SOUTH_WEST, baseIntegerQuadNode.getQuadrantOfShape(southWestInteger, false));
+    assertEquals(
+        Quadrant.SOUTH_EAST, baseIntegerQuadNode.getQuadrantOfShape(southEastInteger, false));
 
-    assertNull(baseIntegerQuadNode.getQuadrantOfShape(multipleQuadrantsInteger));
+    assertNull(baseIntegerQuadNode.getQuadrantOfShape(multipleQuadrantsInteger, false));
   }
 }
