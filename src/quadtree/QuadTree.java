@@ -5,8 +5,7 @@ import entity.shape.Rectangle;
 import java.util.*;
 
 public class QuadTree<T extends IShapeData> {
-  private final int MAX_HEIGHT;
-
+  private int height;
   private Rectangle shape;
   private QuadNode<T> root;
   private int size;
@@ -17,7 +16,7 @@ public class QuadTree<T extends IShapeData> {
   private int itemsInRoot;
 
   public QuadTree(int maxHeight, Rectangle shape) {
-    this.MAX_HEIGHT = maxHeight;
+    this.height = maxHeight;
     this.shape = shape;
     this.root = new QuadNode<>(shape);
     this.size = 0;
@@ -32,8 +31,8 @@ public class QuadTree<T extends IShapeData> {
     return shape;
   }
 
-  public int getMAX_HEIGHT() {
-    return MAX_HEIGHT;
+  public int getHeight() {
+    return height;
   }
 
   public void insert(T data) {
@@ -114,7 +113,7 @@ public class QuadTree<T extends IShapeData> {
     // finding free place for items or until max height is reached
     int heightCounter = possiblePlaceForData.getHeight();
     while (possiblePlaceForData != null) {
-      if (heightCounter == MAX_HEIGHT) {
+      if (heightCounter == height) {
         if (insertNewData) {
           possiblePlaceForData.addItem(data);
           size++;
@@ -354,13 +353,56 @@ public class QuadTree<T extends IShapeData> {
   }
 
   /**
+   * Reinsert all items that have height greater than given height and set new height of QuadTree
+   *
+   * @param newHeight new height for QuadTree
+   */
+  public void setHeight(int newHeight) {
+    if (newHeight <= 0) {
+      throw new IllegalArgumentException("New height cannot be <= 0!");
+    }
+
+    if (height <= newHeight) {
+      height = newHeight;
+      return;
+    }
+
+    height = newHeight;
+
+    Stack<QuadNode<T>> stackOfNodesToProcess = new Stack<>();
+    Stack<T> itemsToReinsert = new Stack<>();
+
+    stackOfNodesToProcess.push(root);
+
+    while (!stackOfNodesToProcess.empty()) {
+      QuadNode<T> currentNode = stackOfNodesToProcess.pop();
+
+      if (currentNode.getHeight() > newHeight) {
+        itemsToReinsert.addAll(currentNode.getItems());
+        currentNode.removeAllItems();
+      }
+
+      for (QuadNode<T> child : currentNode.getChildren()) {
+        if (child != null) {
+          stackOfNodesToProcess.push(child);
+        }
+      }
+    }
+
+    while (!itemsToReinsert.empty()) {
+      insert(itemsToReinsert.pop());
+    }
+  }
+
+  /**
    * Calculates health of quad tree. The smaller the number, the better health does quad tree have.
    * <br>
    * It is calculated as distance between two vectors. First one is ideal quad tree (0, size/4,
    * size/4, size/4, size/4) and second one is current layoult quad tree in shape (itemsInRoot,
    * itemsInNorthWest, itemsInNorthEast, itemsInSouthWest, itemsInSouthEast).
    *
-   * @return Number representing health of quad tree.
+   * @return Number representing health of quad tree. <br>
+   *     0 is best scenario.
    */
   public double getHealthOfQuadTree() {
     double[] idealLayoult = {
