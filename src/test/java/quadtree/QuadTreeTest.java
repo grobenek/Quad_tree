@@ -1,4 +1,4 @@
-package test.quadtree;
+package quadtree;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -250,9 +250,9 @@ public class QuadTreeTest {
 
   @Test
   void generateAndTestMethodsOfQuadTree() {
-    int searchChanceIn100 = 20;
-    int insertChanceIn100 = 60;
-    int deleteChanceIn100 = 20;
+    int searchChanceIn100 = 30;
+    int insertChanceIn100 = 50;
+    int deleteChanceIn100 = 30;
 
     if ((searchChanceIn100 + insertChanceIn100 + deleteChanceIn100) != 100) {
       throw new IllegalStateException(

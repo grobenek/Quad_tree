@@ -1,4 +1,4 @@
-package test.quadtree;
+package quadtree;
 
 import static org.junit.jupiter.api.Assertions.*;
 
