@@ -3,32 +3,52 @@ package quadtree;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
-public class QuadNode<T> {
+public class QuadNode<T extends IShapeData> {
   public static final int MAX_CHILDREN = 4;
   private final QuadNode<T>[] children;
+  private QuadNode<T> parent;
+  private int height;
   private final Rectangle shape;
   private final List<T> items;
-
-  public QuadNode(QuadNode<T>[] children, Rectangle shape, List<T> items) {
-    this.children = children;
-    this.shape = shape;
-    this.items = items;
-  }
-
-  public QuadNode(QuadNode<T>[] children, Rectangle shape) {
-    this.children = children;
-    this.shape = shape;
-    this.items = new ArrayList<>();
-  }
+  private int childrenSize;
 
   public QuadNode(Rectangle shape) {
     this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
     this.shape = shape;
-    this.items = new ArrayList<>();
+    this.items = new LinkedList<>();
+    this.parent = null;
+    childrenSize = 0;
+  }
+
+  public QuadNode(T data, Rectangle shape) {
+    this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
+    this.shape = shape;
+    this.items = new LinkedList<>();
+    this.parent = null;
+    childrenSize = 0;
+    items.add(data);
+  }
+
+  public int getHeight() {
+    return height;
+  }
+
+  public QuadNode<T> setHeight(int height) {
+    this.height = height;
+    return this;
+  }
+
+  public QuadNode<T> getParent() {
+    return parent;
+  }
+
+  public QuadNode<T> setParent(QuadNode<T> parent) {
+    this.parent = parent;
+    return this;
   }
 
   public T getItem(int index) {
@@ -41,15 +61,16 @@ public class QuadNode<T> {
     return indexOfFirstItem != -1 ? items.get(indexOfFirstItem) : null;
   }
 
-  public void addItem(T item) {
+  public QuadNode<T> addItem(T item) {
     items.add(item);
+    return this;
   }
 
   public int getItemsSize() {
     return items.size();
   }
 
-  public List<T> getAllItems() {
+  public List<T> getItems() {
     return items;
   }
 
@@ -69,28 +90,59 @@ public class QuadNode<T> {
     return children[quadrant.ordinal()];
   }
 
+  public void removeChild(Quadrant quadrant) {
+    if (quadrant == null) {
+      throw new IllegalArgumentException("Cannot remove child from quadrant: null!");
+    }
+
+    this.children[quadrant.ordinal()] = null;
+  }
+
   private void addChild(QuadNode<T> child, Quadrant quadrant) {
     checkForExistingChildrenAtDirection(quadrant);
 
     children[quadrant.ordinal()] = child;
+    childrenSize++;
   }
 
-  public void generateChild(Quadrant quadrant) {
+  /**
+   * Generate new child for given quadrant and return refference to it
+   *
+   * @param quadrant quadrant of child
+   * @return generated child
+   */
+  public QuadNode<T> generateChild(Quadrant quadrant) {
     checkForExistingChildrenAtDirection(quadrant);
 
     addChild(new QuadNode<>(generateChildShape(quadrant)), quadrant);
+    getChild(quadrant).setParent(this).setHeight(getHeight() + 1);
+    return getChild(quadrant);
+  }
+
+  public void generateChildren() {
+    int childrenSize = getChildrenSize();
+    if (childrenSize != 0) {
+      throw new IllegalStateException(
+          String.format(
+              "Cannot genereate new children, because %d children already exist!", childrenSize));
+    }
+
+    for (Quadrant quadrant : Quadrant.values()) {
+      this.generateChild(quadrant);
+    }
   }
 
   private void checkForExistingChildrenAtDirection(Quadrant quadrant) {
     if (this.children[quadrant.ordinal()] != null) {
       throw new IllegalStateException(
           String.format(
-              "Child at direction %d already exists at [%f, %f], [%f, %f]!",
+              "Child at direction %d already exists at [%f, %f], [%f, %f] for node in height %d!",
               quadrant.ordinal(),
               shape.getFirstPoint().widthCoordinate(),
               shape.getFirstPoint().lengthCoordinate(),
               shape.getSecondPoint().widthCoordinate(),
-              shape.getSecondPoint().lengthCoordinate()));
+              shape.getSecondPoint().lengthCoordinate(),
+              height));
     }
   }
 
@@ -98,8 +150,8 @@ public class QuadNode<T> {
     GpsCoordinates bottomLeft = shape.getFirstPoint();
     GpsCoordinates topRight = shape.getSecondPoint();
 
-    double midWidth = (bottomLeft.widthCoordinate() + topRight.widthCoordinate()) / 2;
-    double midLength = (bottomLeft.lengthCoordinate() + topRight.lengthCoordinate()) / 2;
+    double midWidth = shape.getHalfWidth();
+    double midLength = shape.getHalfLength();
 
     switch (quadrant) {
       case NORTH_WEST -> {
@@ -133,26 +185,182 @@ public class QuadNode<T> {
   }
 
   public int getChildrenSize() {
-    int notNullChildrenCounter = 0;
+    return childrenSize;
+  }
 
-    for (QuadNode<T> child : children) {
-      if (child != null) {
-        notNullChildrenCounter++;
+  /**
+   * Checks for shape presence in quadrant. Returns null if it is in multiple quadrants
+   *
+   * @param data shape to check
+   * @return quadrant where shape is in or null if it is in multiple quadrants or equals quadrant
+   */
+  public Quadrant getQuadrantOfShape(IShapeData data, boolean isChildOfCurrentNode) {
+    GpsCoordinates bottomLeftPoint = data.getShapeOfData().getFirstPoint();
+    GpsCoordinates topRightPoint = data.getShapeOfData().getSecondPoint();
+
+    if (isChildOfCurrentNode) {
+      return getChildsQuadrant(data);
+    }
+
+    if (data.getShapeOfData().equals(shape)) {
+      return null;
+    }
+
+    if (isLeaf() && data.getShapeOfData().isPoint()) {
+      if (compareItemsShapeWithNew(data)) {
+        return null;
       }
     }
 
-    return notNullChildrenCounter;
+    if (chekForPresenceInNorthWestQuadrant(bottomLeftPoint, topRightPoint)) {
+      return Quadrant.NORTH_WEST;
+    }
+    if (checkForPresenceInNorthEastQuadrant(bottomLeftPoint, topRightPoint)) {
+      return Quadrant.NORTH_EAST;
+    }
+    if (checkForPresenceInSouthWestQuadrant(bottomLeftPoint, topRightPoint)) {
+      return Quadrant.SOUTH_WEST;
+    }
+    if (checkForPresenceInSouthEastQuadrant(bottomLeftPoint, topRightPoint)) {
+      return Quadrant.SOUTH_EAST;
+    }
+    return null;
+  }
+
+  private Quadrant getChildsQuadrant(IShapeData childToFind) {
+    for (int i = 0; i < children.length; i++) {
+      if (children[i] == null) {
+        continue;
+      }
+
+      if (children[i].getShape().equals(childToFind.getShapeOfData())) {
+        return Quadrant.values()[i];
+      }
+    }
+    return null;
+  }
+
+  private boolean compareItemsShapeWithNew(IShapeData data) {
+    for (IShapeData item : items) {
+      if (item.getShapeOfData().equals(data.getShapeOfData())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean checkForPresenceInSouthEastQuadrant(
+      GpsCoordinates bottomLeftPoint, GpsCoordinates topRightPoint) {
+    double thisFirstPointLength = shape.getFirstPoint().lengthCoordinate();
+    double thisSecondPointWidth = shape.getSecondPoint().widthCoordinate();
+
+    double bottomLeftPointWidth = bottomLeftPoint.widthCoordinate();
+    double bottomLeftPointLength = bottomLeftPoint.lengthCoordinate();
+    double topRightPointWidth = topRightPoint.widthCoordinate();
+    double topRightPointLength = topRightPoint.lengthCoordinate();
+
+    double halfWidth = shape.getHalfWidth();
+    double halfLength = shape.getHalfLength();
+
+    return ((bottomLeftPointWidth > halfWidth
+        && bottomLeftPointWidth < thisSecondPointWidth
+        && (bottomLeftPointLength > thisFirstPointLength && bottomLeftPointLength < halfLength)
+        && (topRightPointWidth > halfWidth
+            && topRightPointWidth < thisSecondPointWidth
+            && (topRightPointLength > thisFirstPointLength && topRightPointLength < halfLength))));
+  }
+
+  private boolean checkForPresenceInSouthWestQuadrant(
+      GpsCoordinates bottomLeftPoint, GpsCoordinates topRightPoint) {
+    double thisFirstPointWidth = shape.getFirstPoint().widthCoordinate();
+    double thisFirstPointLength = shape.getFirstPoint().lengthCoordinate();
+
+    double bottomLeftPointWidth = bottomLeftPoint.widthCoordinate();
+    double bottomLeftPointLength = bottomLeftPoint.lengthCoordinate();
+    double topRightPointWidth = topRightPoint.widthCoordinate();
+    double topRightPointLength = topRightPoint.lengthCoordinate();
+
+    double halfWidth = shape.getHalfWidth();
+    double halfLength = shape.getHalfLength();
+
+    return ((bottomLeftPointWidth > thisFirstPointWidth
+            && bottomLeftPointWidth < halfWidth
+            && (bottomLeftPointLength > thisFirstPointLength && bottomLeftPointLength < halfLength))
+        && (topRightPointWidth > thisFirstPointWidth
+            && topRightPointWidth < shape.getHalfWidth()
+            && (topRightPointLength > thisFirstPointLength && topRightPointLength < halfLength)));
+  }
+
+  private boolean checkForPresenceInNorthEastQuadrant(
+      GpsCoordinates bottomLeftPoint, GpsCoordinates topRightPoint) {
+    double thisSecondPointWidth = shape.getSecondPoint().widthCoordinate();
+    double thisSecondPointLength = shape.getSecondPoint().lengthCoordinate();
+
+    double bottomLeftPointWidth = bottomLeftPoint.widthCoordinate();
+    double bottomLeftPointLength = bottomLeftPoint.lengthCoordinate();
+    double topRightPointWidth = topRightPoint.widthCoordinate();
+    double topRightPointLength = topRightPoint.lengthCoordinate();
+
+    double halfWidth = shape.getHalfWidth();
+    double halfLength = shape.getHalfLength();
+
+    return ((bottomLeftPointWidth > halfWidth && bottomLeftPointWidth < thisSecondPointWidth)
+            && (bottomLeftPointLength > halfLength
+                && bottomLeftPointLength < thisSecondPointLength))
+        && ((topRightPointWidth > halfWidth && topRightPointWidth < thisSecondPointWidth)
+            && (topRightPointLength > halfLength && topRightPointLength < thisSecondPointLength));
+  }
+
+  private boolean chekForPresenceInNorthWestQuadrant(
+      GpsCoordinates bottomLeftPoint, GpsCoordinates topRightPoint) {
+
+    double thisFirstPointWidth = shape.getFirstPoint().widthCoordinate();
+    double thisSecondPointLength = shape.getSecondPoint().lengthCoordinate();
+
+    double bottomLeftPointWidth = bottomLeftPoint.widthCoordinate();
+    double bottomLeftPointLength = bottomLeftPoint.lengthCoordinate();
+    double topRightPointWidth = topRightPoint.widthCoordinate();
+    double topRightPointLength = topRightPoint.lengthCoordinate();
+
+    double halfWidth = shape.getHalfWidth();
+    double halfLength = shape.getHalfLength();
+
+    return ((bottomLeftPointWidth > thisFirstPointWidth && bottomLeftPointWidth < halfWidth)
+            && (bottomLeftPointLength > halfLength
+                && bottomLeftPointLength < thisSecondPointLength))
+        && ((topRightPointWidth > thisFirstPointWidth && topRightPointWidth < halfWidth)
+            && (topRightPointLength > halfLength && topRightPointLength < thisSecondPointLength));
   }
 
   @Override
   public String toString() {
     return "QuadNode{"
         + "children="
-        + Arrays.toString(children)
+        + Arrays.toString(Arrays.stream(children).map(child -> child == null ? 0 : 1).toArray())
         + ", gpsCoordinates="
         + shape
         + ", items="
         + items
         + '}';
+  }
+
+  public void removeItem(T item) {
+    items.remove(item);
+  }
+
+  public void removeAllItems() {
+    items.clear();
+  }
+
+  public boolean isLeaf() {
+    return childrenSize == 0;
+  }
+
+  public void addAllItems(List<T> itemsToAdd) {
+    items.addAll(itemsToAdd);
+  }
+
+  public boolean doesOverlapWithRectangle(Rectangle otherRectangle) {
+    return shape.doesOverlapWithRectangle(otherRectangle);
   }
 }
