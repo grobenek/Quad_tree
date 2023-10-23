@@ -1,4 +1,4 @@
-package test.shape;
+package shape;
 
 import static org.junit.jupiter.api.Assertions.*;
 
