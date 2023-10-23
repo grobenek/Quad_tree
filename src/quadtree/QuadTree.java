@@ -5,25 +5,34 @@ import entity.shape.Rectangle;
 import java.util.*;
 
 public class QuadTree<T extends IShapeData> {
-  private final int MAX_HEIGHT;
-
+  private int height;
   private Rectangle shape;
   private QuadNode<T> root;
   private int size;
+  private int itemsInNorthWest;
+  private int itemsInNorthEast;
+  private int itemsInSouthWest;
+  private int itemsInSouthEast;
+  private int itemsInRoot;
 
   public QuadTree(int maxHeight, Rectangle shape) {
-    this.MAX_HEIGHT = maxHeight;
+    this.height = maxHeight;
     this.shape = shape;
     this.root = new QuadNode<>(shape);
     this.size = 0;
+    this.itemsInNorthWest = 0;
+    this.itemsInNorthEast = 0;
+    this.itemsInSouthEast = 0;
+    this.itemsInSouthWest = 0;
+    this.itemsInRoot = 0;
   }
 
   public Rectangle getShape() {
     return shape;
   }
 
-  public int getMAX_HEIGHT() {
-    return MAX_HEIGHT;
+  public int getHeight() {
+    return height;
   }
 
   public void insert(T data) {
@@ -73,11 +82,20 @@ public class QuadTree<T extends IShapeData> {
     // quadrant is null - add data to parent and end
     if (quadrantForDataToBePlaced == null) {
       if (insertNewData) {
+        itemsInRoot++;
         startingPoint.addItem(data);
         size++;
         return null;
       }
       return startingPoint;
+    }
+
+    // counting items in each quadrant
+    switch (quadrantForDataToBePlaced) {
+      case NORTH_EAST -> itemsInNorthEast++;
+      case NORTH_WEST -> itemsInNorthWest++;
+      case SOUTH_WEST -> itemsInSouthWest++;
+      case SOUTH_EAST -> itemsInSouthEast++;
     }
 
     QuadNode<T> possiblePlaceForData = parentOfPlace.getChild(quadrantForDataToBePlaced);
@@ -95,7 +113,7 @@ public class QuadTree<T extends IShapeData> {
     // finding free place for items or until max height is reached
     int heightCounter = possiblePlaceForData.getHeight();
     while (possiblePlaceForData != null) {
-      if (heightCounter == MAX_HEIGHT) {
+      if (heightCounter == height) {
         if (insertNewData) {
           possiblePlaceForData.addItem(data);
           size++;
@@ -332,5 +350,95 @@ public class QuadTree<T extends IShapeData> {
         && secondPointOfData.widthCoordinate() <= thisSecondPoint.widthCoordinate()
         && firstPointOfData.lengthCoordinate() >= thisFirstPoint.lengthCoordinate()
         && secondPointOfData.lengthCoordinate() <= thisSecondPoint.lengthCoordinate());
+  }
+
+  /**
+   * Reinsert all items that have height greater than given height and set new height of QuadTree
+   *
+   * @param newHeight new height for QuadTree
+   */
+  public void setHeight(int newHeight) {
+    if (newHeight <= 0) {
+      throw new IllegalArgumentException("New height cannot be <= 0!");
+    }
+
+    if (height <= newHeight) {
+      height = newHeight;
+      return;
+    }
+
+    height = newHeight;
+
+    Stack<QuadNode<T>> stackOfNodesToProcess = new Stack<>();
+    Stack<T> itemsToReinsert = new Stack<>();
+
+    stackOfNodesToProcess.push(root);
+
+    while (!stackOfNodesToProcess.empty()) {
+      QuadNode<T> currentNode = stackOfNodesToProcess.pop();
+
+      if (currentNode.getHeight() > newHeight) {
+        itemsToReinsert.addAll(currentNode.getItems());
+        currentNode.removeAllItems();
+      }
+
+      for (QuadNode<T> child : currentNode.getChildren()) {
+        if (child != null) {
+          stackOfNodesToProcess.push(child);
+        }
+      }
+    }
+
+    while (!itemsToReinsert.empty()) {
+      insert(itemsToReinsert.pop());
+    }
+  }
+
+  /**
+   * Calculates health of quad tree. The smaller the number, the better health does quad tree have.
+   * <br>
+   * It is calculated as distance between two vectors. First one is ideal quad tree (0, size/4,
+   * size/4, size/4, size/4) and second one is current layoult quad tree in shape (itemsInRoot,
+   * itemsInNorthWest, itemsInNorthEast, itemsInSouthWest, itemsInSouthEast).
+   *
+   * @return Number representing health of quad tree. <br>
+   *     0 is best scenario.
+   */
+  public double getHealthOfQuadTree() {
+    double[] idealLayoult = {
+      0.0, (double) size / 4, (double) size / 4, (double) size / 4, (double) size / 4
+    };
+
+    double[] currentLayoult = {
+      itemsInRoot, itemsInNorthWest, itemsInNorthEast, itemsInSouthWest, itemsInSouthEast
+    };
+
+    double[] result = new double[5];
+
+    for (int i = 0; i < idealLayoult.length; i++) {
+      result[i] = Math.pow(idealLayoult[i] - currentLayoult[i], 2);
+    }
+
+    return Math.sqrt(Arrays.stream(result).sum());
+  }
+
+  public int getItemsInNorthWest() {
+    return itemsInNorthWest;
+  }
+
+  public int getItemsInNorthEast() {
+    return itemsInNorthEast;
+  }
+
+  public int getItemsInSouthWest() {
+    return itemsInSouthWest;
+  }
+
+  public int getItemsInSouthEast() {
+    return itemsInSouthEast;
+  }
+
+  public int getItemsInRoot() {
+    return itemsInRoot;
   }
 }
