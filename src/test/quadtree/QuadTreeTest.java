@@ -285,12 +285,15 @@ public class QuadTreeTest {
 
         if (chance <= searchChanceIn100) {
           seachAndTestResult(random, insertedItems, searchAllItemsRectangle, quadTree);
+          assertEquals(quadTree.getSize(), insertedItems.size());
           searchCounter++;
         } else if (chance <= searchChanceIn100 + deleteChanceIn100) {
           deleteAndTestResult(random, insertedItems, searchAllItemsRectangle, quadTree);
+          assertEquals(quadTree.getSize(), insertedItems.size());
           deleteCounter++;
         } else {
           insertAndTestResult(random, insertedItems, searchAllItemsRectangle, quadTree);
+          assertEquals(quadTree.getSize(), insertedItems.size());
           insertCounter++;
         }
 //        System.out.println("Number of items in tree: " + insertedItems.size());

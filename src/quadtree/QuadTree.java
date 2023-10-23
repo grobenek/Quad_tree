@@ -9,11 +9,13 @@ public class QuadTree<T extends IShapeData> {
 
   private Rectangle shape;
   private QuadNode<T> root;
+  private int size;
 
   public QuadTree(int maxHeight, Rectangle shape) {
     this.MAX_HEIGHT = maxHeight;
     this.shape = shape;
     this.root = new QuadNode<>(shape);
+    this.size = 0;
   }
 
   public Rectangle getShape() {
@@ -72,6 +74,7 @@ public class QuadTree<T extends IShapeData> {
     if (quadrantForDataToBePlaced == null) {
       if (insertNewData) {
         startingPoint.addItem(data);
+        size++;
         return null;
       }
       return startingPoint;
@@ -83,6 +86,7 @@ public class QuadTree<T extends IShapeData> {
     if (possiblePlaceForData == null) {
       if (insertNewData) {
         tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
+        size++;
         return null;
       }
       return parentOfPlace;
@@ -94,6 +98,7 @@ public class QuadTree<T extends IShapeData> {
       if (heightCounter == MAX_HEIGHT) {
         if (insertNewData) {
           possiblePlaceForData.addItem(data);
+          size++;
           return null;
         }
         return possiblePlaceForData;
@@ -106,6 +111,7 @@ public class QuadTree<T extends IShapeData> {
       if (quadrantForDataToBePlaced == null) {
         if (insertNewData) {
           parentOfPlace.addItem(data);
+          size++;
           return null;
         }
         return parentOfPlace;
@@ -117,6 +123,7 @@ public class QuadTree<T extends IShapeData> {
     // free space for data
     if (insertNewData) {
       tryToInsertOldDataIntoNewChildrenAndInsertNewData(parentOfPlace, data);
+      size++;
       return null;
     }
     return parentOfPlace;
@@ -251,6 +258,7 @@ public class QuadTree<T extends IShapeData> {
     }
 
     nodeOfChild.removeItem(foundData);
+    size--;
 
     // is leaf, but it is not empty
     if (nodeOfChild.isLeaf() && nodeOfChild.getItemsSize() != 0) {
@@ -307,6 +315,10 @@ public class QuadTree<T extends IShapeData> {
         parentOfChild.removeChild(quadrantOfChild);
       }
     }
+  }
+
+  public int getSize() {
+    return size;
   }
 
   private boolean checkIfDataFitIntoRoot(T data) {
