@@ -178,18 +178,7 @@ public class QuadTreeTest {
         Property propertyToRemove = insertedItems.get(indexOfItemToRemove);
         assertNotNull(propertyToRemove);
         assertTrue(listOfAllDataInQuadTree.get().contains(propertyToRemove));
-        assertDoesNotThrow(
-            () ->
-                quadTree.deleteData(
-                    propertyToRemove)); // TODO org.opentest4j.AssertionFailedError: Unexpected
-                                        // exception thrown: java.lang.IllegalStateException: Data
-                                        // Property{registerNumber=10259, description='10259',
-                                        // parcels=null, shape=Rectangle{firstPoint=[300.391040,
-                                        // 550.720737], secondPoint=[302.737308, 559.014783],
-                                        // width=2.346267548489834, length=8.294045532841096}} not
-                                        // found in area Rectangle{firstPoint=[299.598590,
-                                        // 541.929085], secondPoint=[308.898030, 580.475667],
-                                        // width=9.299439906562156, length=38.54658195482966}
+        assertDoesNotThrow(() -> quadTree.deleteData(propertyToRemove));
 
         assertEquals(listOfAllDataInQuadTree.get().size() - 1, insertedItems.size() - 1);
 
@@ -251,8 +240,8 @@ public class QuadTreeTest {
   @Test
   void generateAndTestMethodsOfQuadTree() {
     int searchChanceIn100 = 20;
-    int insertChanceIn100 = 60;
-    int deleteChanceIn100 = 20;
+    int insertChanceIn100 = 50;
+    int deleteChanceIn100 = 30;
 
     if ((searchChanceIn100 + insertChanceIn100 + deleteChanceIn100) != 100) {
       throw new IllegalStateException(
@@ -296,10 +285,19 @@ public class QuadTreeTest {
           assertEquals(quadTree.getSize(), insertedItems.size());
           insertCounter++;
         }
-//        System.out.println("Number of items in tree: " + insertedItems.size());
       }
       System.out.printf(
-          "%d. repetition: %.2f%% search, %.2f%% delete, %.2f%% insert\n",
+          "NORTH_EAST: %d | NORTH_WEST: %d | SOUTH_EAST: %d | SOUTH_WEST: %d | ROOT: %d\n",
+          quadTree.getItemsInNorthEast(),
+          quadTree.getItemsInNorthWest(),
+          quadTree.getItemsInSouthEast(),
+          quadTree.getItemsInSouthWest(),
+          quadTree.getItemsInRoot());
+
+      System.out.printf("Health of quadTree: %.02f\n", quadTree.getHealthOfQuadTree());
+
+      System.out.printf(
+          "%d. repetition: %.2f%% search, %.2f%% delete, %.2f%% insert\n\n",
           repetetion + 1,
           ((double) searchCounter / NUMBER_OF_ITEMS_FOR_ACTIONS) * 100,
           ((double) deleteCounter / NUMBER_OF_ITEMS_FOR_ACTIONS) * 100,
@@ -423,5 +421,103 @@ public class QuadTreeTest {
     assertNotNull(foundItemsWhenSearchingExactItem);
     assertTrue(insertedItems.containsAll(foundItemsWhenSearchingExactItem));
     assertTrue(foundItemsWhenSearchingExactItem.contains(itemToSearchFor));
+  }
+
+  @Test
+  void checkGoodQuadTreeHealth() {
+    QuadTree<Property> quadTree =
+        new QuadTree<>(
+            10,
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 0.0, Direction.W, 0.0),
+                new GpsCoordinates(Direction.N, 10.0, Direction.E, 10.0)));
+
+    Property southEastProperty =
+        new Property(
+            0,
+            "0",
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 6.0, Direction.W, 1.0),
+                new GpsCoordinates(Direction.N, 7.0, Direction.E, 1.0)));
+
+    Property southWestProperty =
+        new Property(
+            1,
+            "1",
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 1.0, Direction.W, 1.0),
+                new GpsCoordinates(Direction.N, 2.0, Direction.E, 1.0)));
+
+    Property northWestProperty =
+        new Property(
+            2,
+            "2",
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 6.0, Direction.W, 6.0),
+                new GpsCoordinates(Direction.N, 6.0, Direction.E, 7.0)));
+
+    Property northEastProperty =
+        new Property(
+            3,
+            "3",
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 1.0, Direction.W, 6.0),
+                new GpsCoordinates(Direction.N, 2.0, Direction.E, 6.0)));
+
+    quadTree.insert(southEastProperty);
+    quadTree.insert(southWestProperty);
+    quadTree.insert(northEastProperty);
+    quadTree.insert(northWestProperty);
+
+    assertEquals(0.0, quadTree.getHealthOfQuadTree());
+  }
+
+  @Test
+  void checkBadQuadTreeHealth() {
+    QuadTree<Property> quadTree =
+        new QuadTree<>(
+            10,
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 0.0, Direction.W, 0.0),
+                new GpsCoordinates(Direction.N, 10.0, Direction.E, 10.0)));
+
+    Property southEastProperty =
+        new Property(
+            0,
+            "0",
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 6.0, Direction.W, 7.0),
+                new GpsCoordinates(Direction.N, 7.0, Direction.E, 4.0)));
+
+    Property southWestProperty =
+        new Property(
+            1,
+            "1",
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 1.0, Direction.W, 1.0),
+                new GpsCoordinates(Direction.N, 2.0, Direction.E, 1.0)));
+
+    Property northWestProperty =
+        new Property(
+            2,
+            "2",
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 7.0, Direction.W, 6.0),
+                new GpsCoordinates(Direction.N, 6.0, Direction.E, 7.0)));
+
+    Property northEastProperty =
+        new Property(
+            3,
+            "3",
+            new Rectangle(
+                new GpsCoordinates(Direction.S, 4.0, Direction.W, 6.0),
+                new GpsCoordinates(Direction.N, 2.0, Direction.E, 6.0)));
+
+    quadTree.insert(southEastProperty);
+    quadTree.insert(southWestProperty);
+    quadTree.insert(northEastProperty);
+    quadTree.insert(northWestProperty);
+
+    assertNotEquals(0.0, quadTree.getHealthOfQuadTree());
   }
 }

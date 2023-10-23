@@ -10,12 +10,22 @@ public class QuadTree<T extends IShapeData> {
   private Rectangle shape;
   private QuadNode<T> root;
   private int size;
+  private int itemsInNorthWest;
+  private int itemsInNorthEast;
+  private int itemsInSouthWest;
+  private int itemsInSouthEast;
+  private int itemsInRoot;
 
   public QuadTree(int maxHeight, Rectangle shape) {
     this.MAX_HEIGHT = maxHeight;
     this.shape = shape;
     this.root = new QuadNode<>(shape);
     this.size = 0;
+    this.itemsInNorthWest = 0;
+    this.itemsInNorthEast = 0;
+    this.itemsInSouthEast = 0;
+    this.itemsInSouthWest = 0;
+    this.itemsInRoot = 0;
   }
 
   public Rectangle getShape() {
@@ -73,11 +83,20 @@ public class QuadTree<T extends IShapeData> {
     // quadrant is null - add data to parent and end
     if (quadrantForDataToBePlaced == null) {
       if (insertNewData) {
+        itemsInRoot++;
         startingPoint.addItem(data);
         size++;
         return null;
       }
       return startingPoint;
+    }
+
+    // counting items in each quadrant
+    switch (quadrantForDataToBePlaced) {
+      case NORTH_EAST -> itemsInNorthEast++;
+      case NORTH_WEST -> itemsInNorthWest++;
+      case SOUTH_WEST -> itemsInSouthWest++;
+      case SOUTH_EAST -> itemsInSouthEast++;
     }
 
     QuadNode<T> possiblePlaceForData = parentOfPlace.getChild(quadrantForDataToBePlaced);
@@ -332,5 +351,52 @@ public class QuadTree<T extends IShapeData> {
         && secondPointOfData.widthCoordinate() <= thisSecondPoint.widthCoordinate()
         && firstPointOfData.lengthCoordinate() >= thisFirstPoint.lengthCoordinate()
         && secondPointOfData.lengthCoordinate() <= thisSecondPoint.lengthCoordinate());
+  }
+
+  /**
+   * Calculates health of quad tree. The smaller the number, the better health does quad tree have.
+   * <br>
+   * It is calculated as distance between two vectors. First one is ideal quad tree (0, size/4,
+   * size/4, size/4, size/4) and second one is current layoult quad tree in shape (itemsInRoot,
+   * itemsInNorthWest, itemsInNorthEast, itemsInSouthWest, itemsInSouthEast).
+   *
+   * @return Number representing health of quad tree.
+   */
+  public double getHealthOfQuadTree() {
+    double[] idealLayoult = {
+      0.0, (double) size / 4, (double) size / 4, (double) size / 4, (double) size / 4
+    };
+
+    double[] currentLayoult = {
+      itemsInRoot, itemsInNorthWest, itemsInNorthEast, itemsInSouthWest, itemsInSouthEast
+    };
+
+    double[] result = new double[5];
+
+    for (int i = 0; i < idealLayoult.length; i++) {
+      result[i] = Math.pow(idealLayoult[i] - currentLayoult[i], 2);
+    }
+
+    return Math.sqrt(Arrays.stream(result).sum());
+  }
+
+  public int getItemsInNorthWest() {
+    return itemsInNorthWest;
+  }
+
+  public int getItemsInNorthEast() {
+    return itemsInNorthEast;
+  }
+
+  public int getItemsInSouthWest() {
+    return itemsInSouthWest;
+  }
+
+  public int getItemsInSouthEast() {
+    return itemsInSouthEast;
+  }
+
+  public int getItemsInRoot() {
+    return itemsInRoot;
   }
 }
