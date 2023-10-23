@@ -250,7 +250,7 @@ public class QuadTreeTest {
 
   @Test
   void generateAndTestMethodsOfQuadTree() {
-    int searchChanceIn100 = 30;
+    int searchChanceIn100 = 20;
     int insertChanceIn100 = 50;
     int deleteChanceIn100 = 30;
 
