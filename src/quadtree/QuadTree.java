@@ -1,5 +1,6 @@
 package quadtree;
 
+import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
 import java.util.*;
@@ -420,6 +421,167 @@ public class QuadTree<T extends IShapeData> {
     }
 
     return Math.sqrt(Arrays.stream(result).sum());
+  }
+
+  /**
+   * Returns how
+   *
+   * @param quadrantOfNode quadrant for which calculate health. Null means health of root.
+   * @return Number representing health of quad tree. <br>
+   *     0 is best scenario.
+   */
+  private double getHealthForRootsNode(Quadrant quadrantOfNode) {
+    if (quadrantOfNode != null && root.getChild(quadrantOfNode) == null) {
+      throw new IllegalStateException("Cannot calculate health for null child of root!");
+    }
+
+    if (quadrantOfNode == null) {
+      return itemsInRoot;
+    }
+
+    double idealLayoult = (double) size / 4;
+
+    double currentLayoult;
+
+    switch (quadrantOfNode) {
+      case NORTH_EAST -> currentLayoult = itemsInNorthEast;
+      case NORTH_WEST -> currentLayoult = itemsInNorthWest;
+      case SOUTH_WEST -> currentLayoult = itemsInSouthWest;
+      case SOUTH_EAST -> currentLayoult = itemsInSouthEast;
+      default -> throw new IllegalArgumentException(
+          String.format("Quadrant %s is not valid quadrant!", quadrantOfNode.name()));
+    }
+
+    return Math.abs(idealLayoult - currentLayoult);
+  }
+
+  public void optimize() {
+    double healthOfTree = getHealthOfQuadTree();
+
+    // TODO dat najeku hranicu kde sa to neoplati
+
+    double[] healthOfEachQudrant = new double[5];
+
+    for (Quadrant quadrant : Quadrant.values()) {
+      if (root.getChild(quadrant) == null) {
+        continue;
+      }
+
+      healthOfEachQudrant[quadrant.ordinal()] = getHealthForRootsNode(quadrant);
+    }
+
+    healthOfEachQudrant[4] = getHealthForRootsNode(null);
+
+    double max = Double.MIN_VALUE;
+    int maxIndex = -1;
+    for (int i = 0; i < healthOfEachQudrant.length; i++) {
+      if (healthOfEachQudrant[i] > max) {
+        max = healthOfEachQudrant[i];
+        maxIndex = i;
+      }
+    }
+
+    Quadrant worstQuadrant;
+    if (maxIndex == 4) {
+      worstQuadrant = null;
+    } else {
+      worstQuadrant = Quadrant.values()[maxIndex];
+    }
+
+    generateNewQuadTreeBasedOnWorstQuadrant(worstQuadrant);
+  }
+
+  private void generateNewQuadTreeBasedOnWorstQuadrant(Quadrant worstQuadrant) {
+
+    Rectangle shapeOfWorstQuadrant;
+    double xCenterOfWorstQuadrant;
+    double yCenterOfWorstQuadrant;
+    Rectangle centerOfWorstQuadrant;
+    GpsCoordinates firstPointOfNewShape;
+    GpsCoordinates seconPointOfNewShape;
+
+    if (worstQuadrant == null) {
+      shapeOfWorstQuadrant = shape;
+
+      firstPointOfNewShape = shapeOfWorstQuadrant.getFirstPoint();
+
+      seconPointOfNewShape =
+          new GpsCoordinates(
+              Direction.N,
+              (shapeOfWorstQuadrant.getSecondPoint().widthCoordinate()
+                  + (shapeOfWorstQuadrant.getWidth())),
+              Direction.E,
+              (shapeOfWorstQuadrant.getSecondPoint().lengthCoordinate()
+                  + (shapeOfWorstQuadrant.getLength())));
+    } else {
+      shapeOfWorstQuadrant = root.getChild(worstQuadrant).getShape();
+
+      xCenterOfWorstQuadrant =
+          (shapeOfWorstQuadrant.getFirstPoint().widthCoordinate()
+                  + shapeOfWorstQuadrant.getSecondPoint().widthCoordinate())
+              / 2;
+      yCenterOfWorstQuadrant =
+          (shapeOfWorstQuadrant.getFirstPoint().lengthCoordinate()
+                  + shapeOfWorstQuadrant.getSecondPoint().lengthCoordinate())
+              / 2;
+
+      centerOfWorstQuadrant =
+          new Rectangle(
+              new GpsCoordinates(
+                  Direction.S, xCenterOfWorstQuadrant, Direction.W, yCenterOfWorstQuadrant),
+              new GpsCoordinates(
+                  Direction.S, xCenterOfWorstQuadrant, Direction.W, yCenterOfWorstQuadrant));
+
+      firstPointOfNewShape =
+          new GpsCoordinates(
+              Direction.S,
+              (centerOfWorstQuadrant.getFirstPoint().widthCoordinate() - (shape.getWidth())),
+              Direction.W,
+              (centerOfWorstQuadrant.getFirstPoint().lengthCoordinate() - (shape.getLength())));
+
+      seconPointOfNewShape =
+          new GpsCoordinates(
+              Direction.N,
+              (centerOfWorstQuadrant.getSecondPoint().widthCoordinate()) + (shape.getWidth()),
+              Direction.E,
+              (centerOfWorstQuadrant.getSecondPoint().lengthCoordinate() + (shape.getLength())));
+    }
+
+    Rectangle newShapeOfTree = new Rectangle(firstPointOfNewShape, seconPointOfNewShape);
+
+    QuadTree<T> newQuadTree = new QuadTree<>(height, newShapeOfTree);
+    newQuadTree = repopulateNewTreeWithItemsFromOldTree(newQuadTree);
+
+    shape = newQuadTree.shape;
+    root = newQuadTree.root;
+    size = newQuadTree.size;
+    itemsInNorthWest = newQuadTree.itemsInNorthWest;
+    itemsInNorthEast = newQuadTree.itemsInNorthEast;
+    itemsInSouthWest = newQuadTree.itemsInSouthWest;
+    itemsInSouthEast = newQuadTree.itemsInSouthEast;
+    itemsInRoot = newQuadTree.itemsInRoot;
+  }
+
+  private QuadTree<T> repopulateNewTreeWithItemsFromOldTree(QuadTree<T> newQuadTree) {
+    Queue<QuadNode<T>> queueOfNodesToProcess = new LinkedList<>();
+
+    queueOfNodesToProcess.offer(root);
+
+    while (!queueOfNodesToProcess.isEmpty()) {
+      QuadNode<T> currentNode = queueOfNodesToProcess.poll();
+
+      if (currentNode.getItemsSize() != 0) {
+        currentNode.getItems().forEach(newQuadTree::insert);
+      }
+
+      for (QuadNode<T> child : currentNode.getChildren()) {
+        if (child != null) {
+          queueOfNodesToProcess.offer(child);
+        }
+      }
+    }
+
+    return newQuadTree;
   }
 
   public int getItemsInNorthWest() {
