@@ -91,12 +91,14 @@ public class QuadTree<T extends IShapeData> {
       return startingPoint;
     }
 
-    // counting items in each quadrant
-    switch (quadrantForDataToBePlaced) {
-      case NORTH_EAST -> itemsInNorthEast++;
-      case NORTH_WEST -> itemsInNorthWest++;
-      case SOUTH_WEST -> itemsInSouthWest++;
-      case SOUTH_EAST -> itemsInSouthEast++;
+    // Update item counts in each quadrant
+    if (insertNewData) {
+      switch (quadrantForDataToBePlaced) {
+        case NORTH_EAST -> itemsInNorthEast++;
+        case NORTH_WEST -> itemsInNorthWest++;
+        case SOUTH_WEST -> itemsInSouthWest++;
+        case SOUTH_EAST -> itemsInSouthEast++;
+      }
     }
 
     QuadNode<T> possiblePlaceForData = parentOfPlace.getChild(quadrantForDataToBePlaced);
@@ -269,6 +271,8 @@ public class QuadTree<T extends IShapeData> {
       throw new IllegalStateException(String.format("Data %s not found in quadtree", data));
     }
 
+    Quadrant quadrantOfDataInRoot = root.getQuadrantOfShape(data, false);
+
     T foundData = nodeOfChild.getItem(data);
 
     if (foundData == null) {
@@ -278,6 +282,17 @@ public class QuadTree<T extends IShapeData> {
 
     nodeOfChild.removeItem(foundData);
     size--;
+
+    if (quadrantOfDataInRoot == null) {
+      itemsInRoot--;
+    } else {
+      switch (quadrantOfDataInRoot) {
+        case SOUTH_EAST -> itemsInSouthEast--;
+        case SOUTH_WEST -> itemsInSouthWest--;
+        case NORTH_EAST -> itemsInNorthEast--;
+        case NORTH_WEST -> itemsInNorthWest--;
+      }
+    }
 
     // is leaf, but it is not empty
     if (nodeOfChild.isLeaf() && nodeOfChild.getItemsSize() != 0) {
@@ -458,7 +473,9 @@ public class QuadTree<T extends IShapeData> {
   public void optimize() {
     double healthOfTree = getHealthOfQuadTree();
 
-    // TODO dat najeku hranicu kde sa to neoplati
+    //    if (healthOfTree > ) {
+    //
+    //    }
 
     double[] healthOfEachQudrant = new double[5];
 
@@ -479,6 +496,11 @@ public class QuadTree<T extends IShapeData> {
         max = healthOfEachQudrant[i];
         maxIndex = i;
       }
+    }
+
+    // everything is equal
+    if (maxIndex == -1) {
+      return;
     }
 
     Quadrant worstQuadrant;
@@ -550,19 +572,19 @@ public class QuadTree<T extends IShapeData> {
     Rectangle newShapeOfTree = new Rectangle(firstPointOfNewShape, seconPointOfNewShape);
 
     QuadTree<T> newQuadTree = new QuadTree<>(height, newShapeOfTree);
-    newQuadTree = repopulateNewTreeWithItemsFromOldTree(newQuadTree);
+    repopulateNewTreeWithItemsFromOldTree(newQuadTree);
 
-    shape = newQuadTree.shape;
-    root = newQuadTree.root;
-    size = newQuadTree.size;
-    itemsInNorthWest = newQuadTree.itemsInNorthWest;
-    itemsInNorthEast = newQuadTree.itemsInNorthEast;
-    itemsInSouthWest = newQuadTree.itemsInSouthWest;
-    itemsInSouthEast = newQuadTree.itemsInSouthEast;
-    itemsInRoot = newQuadTree.itemsInRoot;
+    this.shape = newQuadTree.shape;
+    this.root = newQuadTree.root;
+    this.size = newQuadTree.size;
+    this.itemsInNorthWest = newQuadTree.itemsInNorthWest;
+    this.itemsInNorthEast = newQuadTree.itemsInNorthEast;
+    this.itemsInSouthWest = newQuadTree.itemsInSouthWest;
+    this.itemsInSouthEast = newQuadTree.itemsInSouthEast;
+    this.itemsInRoot = newQuadTree.itemsInRoot;
   }
 
-  private QuadTree<T> repopulateNewTreeWithItemsFromOldTree(QuadTree<T> newQuadTree) {
+  private void repopulateNewTreeWithItemsFromOldTree(QuadTree<T> newQuadTree) {
     Queue<QuadNode<T>> queueOfNodesToProcess = new LinkedList<>();
 
     queueOfNodesToProcess.offer(root);
@@ -572,6 +594,7 @@ public class QuadTree<T extends IShapeData> {
 
       if (currentNode.getItemsSize() != 0) {
         currentNode.getItems().forEach(newQuadTree::insert);
+        currentNode.removeAllItems();
       }
 
       for (QuadNode<T> child : currentNode.getChildren()) {
@@ -580,8 +603,6 @@ public class QuadTree<T extends IShapeData> {
         }
       }
     }
-
-    return newQuadTree;
   }
 
   public int getItemsInNorthWest() {
