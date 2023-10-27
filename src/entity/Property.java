@@ -26,6 +26,26 @@ public class Property implements IShapeData {
     return shape;
   }
 
+  public void setRegisterNumber(int registerNumber) {
+    this.registerNumber = registerNumber;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void setShape(Rectangle shape) {
+    this.shape = shape;
+  }
+
+  public void addParcel(Parcel parcel) {
+    parcels.add(parcel);
+  }
+
+  public void setParcels(List<Parcel> parcels) {
+    this.parcels = parcels;
+  }
+
   @Override
   public String toString() {
     return "Property{"
