@@ -194,11 +194,11 @@ public class QuadNode<T extends IShapeData> {
    * @param data shape to check
    * @return quadrant where shape is in or null if it is in multiple quadrants or equals quadrant
    */
-  public Quadrant getQuadrantOfShape(IShapeData data, boolean isChildOfCurrentNode) {
+  public Quadrant getQuadrantOfShape(IShapeData data, boolean isDirectChildOfCurrentNode) {
     GpsCoordinates bottomLeftPoint = data.getShapeOfData().getFirstPoint();
     GpsCoordinates topRightPoint = data.getShapeOfData().getSecondPoint();
 
-    if (isChildOfCurrentNode) {
+    if (isDirectChildOfCurrentNode) {
       return getChildsQuadrant(data);
     }
 

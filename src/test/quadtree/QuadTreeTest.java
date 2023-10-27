@@ -301,6 +301,31 @@ public class QuadTreeTest {
           quadTree.getItemsInRoot());
 
       System.out.printf("Health of quadTree: %.02f\n\n", quadTree.getHealthOfQuadTree());
+      System.out.printf("Size of tree: %d\n", quadTree.getSize());
+      System.out.println("Optimizing...");
+      quadTree.optimize();
+      System.out.printf(
+          "NORTH_EAST: %d | NORTH_WEST: %d | SOUTH_EAST: %d | SOUTH_WEST: %d | ROOT: %d\n",
+          quadTree.getItemsInNorthEast(),
+          quadTree.getItemsInNorthWest(),
+          quadTree.getItemsInSouthEast(),
+          quadTree.getItemsInSouthWest(),
+          quadTree.getItemsInRoot());
+
+      System.out.printf("Health of quadTree: %.02f\n\n", quadTree.getHealthOfQuadTree());
+      System.out.printf("Size of tree: %d\n", quadTree.getSize());
+      System.out.println("Optimizing...");
+      quadTree.optimize();
+      System.out.printf(
+          "NORTH_EAST: %d | NORTH_WEST: %d | SOUTH_EAST: %d | SOUTH_WEST: %d | ROOT: %d\n",
+          quadTree.getItemsInNorthEast(),
+          quadTree.getItemsInNorthWest(),
+          quadTree.getItemsInSouthEast(),
+          quadTree.getItemsInSouthWest(),
+          quadTree.getItemsInRoot());
+
+      System.out.printf("Health of quadTree: %.02f\n\n", quadTree.getHealthOfQuadTree());
+      System.out.printf("Size of tree: %d\n", quadTree.getSize());
     }
   }
 
