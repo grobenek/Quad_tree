@@ -23,32 +23,60 @@ public class Controller implements IController, IObserver {
 
   @Override
   public List<Parcel> searchParcelsInGivenShape(Rectangle shapeToSearchIn) {
-    return model.searchParcelsInGivenShape(shapeToSearchIn);
+    try {
+      return model.searchParcelsInGivenShape(shapeToSearchIn);
+    } catch (Exception exception) {
+      view.showPopupMessage(exception.getLocalizedMessage());
+      return null;
+    }
   }
 
   @Override
   public List<Property> searchPropertiesInGivenShape(Rectangle shapeToSearchIn) {
-    return model.searchPropertiesInGivenShape(shapeToSearchIn);
+    try {
+      return model.searchPropertiesInGivenShape(shapeToSearchIn);
+    } catch (Exception exception) {
+      view.showPopupMessage(exception.getLocalizedMessage());
+      return null;
+    }
   }
 
   @Override
   public List<? extends IShapeData>[] searchAllObjectsInGivenShape(Rectangle shapeToSearchIn) {
-    return model.searchAllObjectsInGivenShape(shapeToSearchIn);
+    try {
+      return model.searchAllObjectsInGivenShape(shapeToSearchIn);
+    } catch (Exception exception) {
+      view.showPopupMessage(exception.getLocalizedMessage());
+      return null;
+    }
   }
 
   @Override
   public Property addProperty(int registerNumber, String description, Rectangle shape) {
-    return model.addProperty(registerNumber, description, shape);
+    try {
+      return model.addProperty(registerNumber, description, shape);
+    } catch (Exception exception) {
+      view.showPopupMessage(exception.getLocalizedMessage());
+      return null;
+    }
   }
 
   @Override
   public void initializePropertyQuadTree(int height, Rectangle shape) {
-    model.initializePropertyQuadTree(height, shape);
+    try {
+      model.initializePropertyQuadTree(height, shape);
+    } catch (Exception exception) {
+      view.showPopupMessage(exception.getLocalizedMessage());
+    }
   }
 
   @Override
   public void initializeParcelQuadTree(int height, Rectangle shape) {
-    model.initializeParcelQuadTree(height, shape);
+    try {
+      model.initializeParcelQuadTree(height, shape);
+    } catch (Exception exception) {
+      view.showPopupMessage(exception.getLocalizedMessage());
+    }
   }
 
   @Override

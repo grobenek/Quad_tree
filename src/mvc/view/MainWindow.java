@@ -28,6 +28,12 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   private JTextPane propertyTreeInfo;
   private JPanel mainPanel;
   private JButton generateDataButton;
+  private JButton insertNewParcelButton;
+  private JButton resetTreesButton;
+  private JButton editPropertyButton;
+  private JButton editParcelButton;
+  private JButton deletePropertyButton;
+  private JButton deleteParcelButton;
 
   public MainWindow(IController controller) throws HeadlessException {
     this.controller = controller;
@@ -58,6 +64,9 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
         e -> {
           GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.ALL);
         });
+    resetTreesButton.addActionListener(e -> {
+      initializeBothQuadTrees();
+    });
   }
 
   @Override
@@ -69,6 +78,20 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
     InitializeQuadTree initializePropertyQuadTree = new InitializeQuadTree(this, DataType.PROPERTY);
     initializePropertyQuadTree.attach(this);
     initializePropertyQuadTree.setVisible(true);
+  }
+
+  @Override
+  public void showPopupMessage(String message) {
+    // setting maximum size - errors are often long
+    JTextArea errorTextArea = new JTextArea(message);
+    errorTextArea.setLineWrap(true);
+    errorTextArea.setWrapStyleWord(true);
+    errorTextArea.setEditable(false);
+
+    JScrollPane scrollPane = new JScrollPane(errorTextArea);
+    scrollPane.setPreferredSize(new Dimension(500, 300));
+
+    JOptionPane.showMessageDialog(this, scrollPane, "Nastala chyba :(", JOptionPane.ERROR_MESSAGE);
   }
 
   public void setParcelTreeInfo(QuadTree<Parcel> parcelQuadTree) {

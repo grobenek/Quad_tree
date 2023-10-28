@@ -1,6 +1,3 @@
-import entity.shape.Direction;
-import entity.shape.GpsCoordinates;
-import entity.shape.Rectangle;
 import mvc.controller.Controller;
 import mvc.model.ModelWrapper;
 import mvc.view.MainWindow;
