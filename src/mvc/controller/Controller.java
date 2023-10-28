@@ -40,6 +40,11 @@ public class Controller implements IController, IObserver {
   }
 
   @Override
+  public Property addProperty(int registerNumber, String description, Rectangle shape) {
+    return model.addProperty(registerNumber, description, shape);
+  }
+
+  @Override
   public void update(IObservable observable) {
     QuadTree<? extends IShapeData>[] trees = observable.getTrees();
 

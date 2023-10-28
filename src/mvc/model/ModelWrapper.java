@@ -3,8 +3,6 @@ package mvc.model;
 import entity.Parcel;
 import entity.Property;
 import entity.shape.Rectangle;
-
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import mvc.view.IObservable;

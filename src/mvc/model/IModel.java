@@ -12,4 +12,5 @@ public interface IModel extends IObservable {
     List<Parcel> searchParcelsInGivenShape(Rectangle shapeToSearchIn);
     List<Property> searchPropertiesInGivenShape(Rectangle shapeToSearchIn);
     List<? extends IShapeData>[] searchAllObjectsInGivenShape(Rectangle shapeToSearchIn);
+    Property addProperty(int registerNumber, String description, Rectangle shape);
 }
