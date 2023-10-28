@@ -8,10 +8,15 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.*;
 import mvc.controller.IController;
+import mvc.view.constant.DataType;
+import mvc.view.constant.SearchCriteria;
+import mvc.view.observable.IObservable;
+import mvc.view.observable.IObserver;
+import mvc.view.observable.IQuadTreeParametersObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
 
-public class MainWindow extends JFrame implements IMainWindow {
+public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
   private IController controller;
   private JButton insertNewPropertyButton;
@@ -24,7 +29,9 @@ public class MainWindow extends JFrame implements IMainWindow {
   private JPanel mainPanel;
   private JButton generateDataButton;
 
-  public MainWindow() throws HeadlessException {
+  public MainWindow(IController controller) throws HeadlessException {
+    this.controller = controller;
+
     setContentPane(mainPanel);
     setTitle("Szathmáry_AUS2 - Semestrálna práca č. 1");
     setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -34,7 +41,7 @@ public class MainWindow extends JFrame implements IMainWindow {
 
     insertNewPropertyButton.addActionListener(
         e -> {
-          NewPropertyDialog newPropertyDialog = new NewPropertyDialog(this, controller);
+          NewPropertyDialog newPropertyDialog = new NewPropertyDialog(this, this.controller);
         });
 
     seachPropertiesButton.addActionListener(
@@ -51,6 +58,17 @@ public class MainWindow extends JFrame implements IMainWindow {
         e -> {
           GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.ALL);
         });
+  }
+
+  @Override
+  public void initializeBothQuadTrees() {
+    InitializeQuadTree initializeParcelQuadTree = new InitializeQuadTree(this, DataType.PARCEL);
+    initializeParcelQuadTree.attach(this);
+    initializeParcelQuadTree.setVisible(true);
+
+    InitializeQuadTree initializePropertyQuadTree = new InitializeQuadTree(this, DataType.PROPERTY);
+    initializePropertyQuadTree.attach(this);
+    initializePropertyQuadTree.setVisible(true);
   }
 
   public void setParcelTreeInfo(QuadTree<Parcel> parcelQuadTree) {
@@ -82,10 +100,6 @@ public class MainWindow extends JFrame implements IMainWindow {
             propertyQuadTree.getHealthOfQuadTree()));
   }
 
-  public void setController(IController controller) {
-    this.controller = controller;
-  }
-
   @Override
   public void searchProperties(Rectangle area) {
     List<Property> result = controller.searchPropertiesInGivenShape(area);
@@ -103,8 +117,37 @@ public class MainWindow extends JFrame implements IMainWindow {
     resultText.setText(Arrays.toString(result));
   }
 
+  public void initializePropertyQuadTree(int height, Rectangle shape) {
+    controller.initializePropertyQuadTree(height, shape);
+  }
+
+  public void initializeParcelQuadTree(int height, Rectangle shape) {
+    controller.initializeParcelQuadTree(height, shape);
+  }
+
   @Override
   public JFrame getJFrameObject() {
     return this;
+  }
+
+  @Override
+  public void update(IObservable observable) {
+    if (!(observable instanceof IQuadTreeParametersObservable)) {
+      return;
+    }
+
+    if (((IQuadTreeParametersObservable) observable).getQuadTreeDataType() == DataType.PROPERTY) {
+      int propertyQuadTreeHeight = ((IQuadTreeParametersObservable) observable).getQuadTreeHeight();
+      Rectangle propertyQuadTreeRectangle =
+          ((IQuadTreeParametersObservable) observable).getQuadTreeArea();
+      initializePropertyQuadTree(propertyQuadTreeHeight, propertyQuadTreeRectangle);
+    }
+
+    if (((IQuadTreeParametersObservable) observable).getQuadTreeDataType() == DataType.PARCEL) {
+      int parcelQuadTreeHeight = ((IQuadTreeParametersObservable) observable).getQuadTreeHeight();
+      Rectangle parcelQuadTreeRectangle =
+          ((IQuadTreeParametersObservable) observable).getQuadTreeArea();
+      initializeParcelQuadTree(parcelQuadTreeHeight, parcelQuadTreeRectangle);
+    }
   }
 }

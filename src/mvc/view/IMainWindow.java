@@ -11,9 +11,9 @@ import javax.swing.*;
 public interface IMainWindow {
   void setParcelTreeInfo(QuadTree<Parcel> parcelQuadTree);
   void setPropertyTreeInfo(QuadTree<Property> propertyQuadTree);
-  void setController(IController controller);
   void searchProperties(Rectangle area);
   void searchParcels(Rectangle area);
   void searchAllObjects(Rectangle area);
+  void initializeBothQuadTrees();
   JFrame getJFrameObject();
 }

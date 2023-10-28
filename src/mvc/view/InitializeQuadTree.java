@@ -3,31 +3,40 @@ package mvc.view;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
-import mvc.view.constant.SearchCriteria;
+import mvc.view.constant.DataType;
+import mvc.view.observable.IObserver;
+import mvc.view.observable.IQuadTreeParametersObservable;
 
 import java.awt.event.*;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.*;
 
-public class GetShapeDialog extends JDialog {
+public class InitializeQuadTree extends JDialog implements IQuadTreeParametersObservable {
+  private List<IObserver> observers;
+  private DataType quadTreeDataType;
   private JPanel contentPane;
   private JButton buttonOK;
   private JButton buttonCancel;
+  private JPanel propertyJPanel;
   private JTextField x1TextField;
   private JLabel x1Label;
   private JTextField y1TextField;
   private JTextField x2TextField;
-  private JLabel x2Label;
   private JTextField y2TextField;
+  private JTextField maxHeightTextField;
+  private JLabel maxHeightLabel;
+  private JLabel y1Label;
   private JLabel y2Label;
-  private final IMainWindow mainWindow;
-  private final SearchCriteria searchCriteria;
+  private JLabel x2Label;
 
-  public GetShapeDialog(IMainWindow mainWindow, SearchCriteria searchCriteria) {
-    this.searchCriteria = searchCriteria;
-    this.mainWindow = mainWindow;
+  public InitializeQuadTree(IMainWindow mainWindow, DataType quadTreeDataType) {
     setContentPane(contentPane);
     setModal(true);
     getRootPane().setDefaultButton(buttonOK);
+
+    observers = new LinkedList<>();
+    this.quadTreeDataType = quadTreeDataType;
 
     buttonOK.addActionListener(e -> onOK());
 
@@ -48,14 +57,46 @@ public class GetShapeDialog extends JDialog {
         KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
         JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-    setSize(200, 250);
+    setSize(500, 400);
     setAutoRequestFocus(true);
-    setTitle("Set shape of searched object");
+    setTitle(String.format("Initialize %s quad tree", quadTreeDataType.name()));
     setLocationRelativeTo(mainWindow.getJFrameObject());
-    setVisible(true);
   }
 
   private void onOK() {
+    sendNotifications();
+    dispose();
+  }
+
+  private void onCancel() {
+    // add your code here if necessary
+    dispose();
+  }
+
+  @Override
+  public void attach(IObserver observer) {
+    observers.add(observer);
+  }
+
+  @Override
+  public void detach(IObserver observer) {
+    observers.remove(observer);
+  }
+
+  @Override
+  public void sendNotifications() {
+    for (IObserver observer : observers) {
+      observer.update(this);
+    }
+  }
+
+  @Override
+  public int getQuadTreeHeight() {
+    return Integer.parseInt(maxHeightTextField.getText());
+  }
+
+  @Override
+  public Rectangle getQuadTreeArea() {
     GpsCoordinates bottomLeftPoint =
         new GpsCoordinates(
             Direction.S,
@@ -69,16 +110,11 @@ public class GetShapeDialog extends JDialog {
             Direction.E,
             Float.parseFloat(y2TextField.getText()));
 
-    switch (searchCriteria) {
-      case PROPERTIES -> mainWindow.searchProperties(new Rectangle(bottomLeftPoint, topRightPoint));
-      case PARCELS -> mainWindow.searchParcels(new Rectangle(bottomLeftPoint, topRightPoint));
-      case ALL -> mainWindow.searchAllObjects(new Rectangle(bottomLeftPoint, topRightPoint));
-    }
-
-    dispose();
+    return new Rectangle(bottomLeftPoint, topRightPoint);
   }
 
-  private void onCancel() {
-    dispose();
+  @Override
+  public DataType getQuadTreeDataType() {
+    return quadTreeDataType;
   }
 }

@@ -92,9 +92,16 @@ public class Rectangle implements IShapeData {
   }
 
   public boolean doesOverlapWithRectangle(Rectangle otherRectangle) {
-    return (Math.abs(this.getHalfWidth() - otherRectangle.getHalfWidth())
-            < (this.getWidth() + otherRectangle.getWidth()))
-        && (Math.abs(this.getHalfLength() - otherRectangle.getHalfLength())
-            < (this.getLength() + otherRectangle.getLength()));
+    double leftWidth = firstPoint.widthCoordinate();
+    double rightWidth = secondPoint.widthCoordinate();
+    double bottomLength = firstPoint.lengthCoordinate();
+    double topLength = secondPoint.lengthCoordinate();
+
+    double otherLeft = otherRectangle.getFirstPoint().widthCoordinate();
+    double otherRight = otherRectangle.getSecondPoint().widthCoordinate();
+    double otherTop = otherRectangle.getFirstPoint().lengthCoordinate();
+    double otherBottom = otherRectangle.getSecondPoint().lengthCoordinate();
+
+    return (leftWidth < otherRight && rightWidth > otherLeft && bottomLength < otherBottom && topLength > otherTop);
   }
 }

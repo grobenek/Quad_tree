@@ -1,4 +1,4 @@
-package mvc.view;
+package mvc.view.constant;
 
 public enum SearchCriteria {
     PARCELS,

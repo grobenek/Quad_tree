@@ -5,12 +5,12 @@ import entity.Property;
 import entity.shape.Rectangle;
 import java.util.LinkedList;
 import java.util.List;
-import mvc.view.IObservable;
-import mvc.view.IObserver;
+import mvc.view.observable.IObserver;
+import mvc.view.observable.IQuadTreeObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
 
-public class ModelWrapper implements IModel, IObservable {
+public class ModelWrapper implements IModel, IQuadTreeObservable {
   QuadTree<Property> propertyQuadTree;
   QuadTree<Parcel> parcelQuadTree;
 
@@ -20,20 +20,24 @@ public class ModelWrapper implements IModel, IObservable {
     this.observers = new LinkedList<>();
   }
 
-  public void intializePropertyQuadTree(int height, Rectangle shape) {
+  @Override
+  public void initializePropertyQuadTree(int height, Rectangle shape) {
     propertyQuadTree = new QuadTree<>(height, shape);
     sendNotifications();
   }
 
-  public void intializeParcelQuadTree(int height, Rectangle shape) {
+  @Override
+  public void initializeParcelQuadTree(int height, Rectangle shape) {
     parcelQuadTree = new QuadTree<>(height, shape);
     sendNotifications();
   }
 
+  @Override
   public List<Parcel> searchParcelsInGivenShape(Rectangle shapeToSearchIn) {
     return parcelQuadTree.search(shapeToSearchIn);
   }
 
+  @Override
   public List<Property> searchPropertiesInGivenShape(Rectangle shapeToSearchIn) {
     return propertyQuadTree.search(shapeToSearchIn);
   }
@@ -46,6 +50,7 @@ public class ModelWrapper implements IModel, IObservable {
    *     * First list is containing Parcels <br>
    *     * Second list is containing Properties
    */
+  @Override
   public List<? extends IShapeData>[] searchAllObjectsInGivenShape(Rectangle shapeToSearchIn) {
     List<Property> propertiesResult = propertyQuadTree.search(shapeToSearchIn);
     List<Parcel> parcelsResult = parcelQuadTree.search(shapeToSearchIn);
@@ -53,6 +58,7 @@ public class ModelWrapper implements IModel, IObservable {
     return new List[] {parcelsResult, propertiesResult};
   }
 
+  @Override
   public Property addProperty(int registerNumber, String description, Rectangle shape) {
     Property property = new Property(registerNumber, description, shape);
 
@@ -64,6 +70,9 @@ public class ModelWrapper implements IModel, IObservable {
 
     return property;
   }
+
+  @Override
+  public void generateDataForBothTrees() {}
 
   @Override
   public void attach(IObserver observer) {
@@ -85,13 +94,13 @@ public class ModelWrapper implements IModel, IObservable {
   @Override
   public QuadTree<? extends IShapeData>[] getTrees() {
     if (parcelQuadTree == null && propertyQuadTree == null) {
-        return new QuadTree[0];
+      return new QuadTree[0];
     } else if (parcelQuadTree == null) {
-        return new QuadTree[]{propertyQuadTree};
+      return new QuadTree[] {propertyQuadTree};
     } else if (propertyQuadTree == null) {
-        return new QuadTree[]{parcelQuadTree};
+      return new QuadTree[] {parcelQuadTree};
     } else {
-        return new QuadTree[]{parcelQuadTree, propertyQuadTree};
+      return new QuadTree[] {parcelQuadTree, propertyQuadTree};
     }
-}
+  }
 }

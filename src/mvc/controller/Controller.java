@@ -3,24 +3,21 @@ package mvc.controller;
 import entity.Parcel;
 import entity.Property;
 import entity.shape.Rectangle;
-
-import java.util.Arrays;
 import java.util.List;
 import mvc.model.IModel;
-import mvc.view.IObservable;
-import mvc.view.IObserver;
-import mvc.view.MainWindow;
+import mvc.view.*;
+import mvc.view.observable.IObservable;
+import mvc.view.observable.IObserver;
+import mvc.view.observable.IQuadTreeObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
 
 public class Controller implements IController, IObserver {
   IModel model;
-  MainWindow view;
+  IMainWindow view;
 
-  public Controller(IModel model, MainWindow mainWindow) {
+  public Controller(IModel model) {
     this.model = model;
-    this.view = mainWindow;
-
     model.attach(this);
   }
 
@@ -45,8 +42,22 @@ public class Controller implements IController, IObserver {
   }
 
   @Override
+  public void initializePropertyQuadTree(int height, Rectangle shape) {
+    model.initializePropertyQuadTree(height, shape);
+  }
+
+  @Override
+  public void initializeParcelQuadTree(int height, Rectangle shape) {
+    model.initializeParcelQuadTree(height, shape);
+  }
+
+  @Override
   public void update(IObservable observable) {
-    QuadTree<? extends IShapeData>[] trees = observable.getTrees();
+    if (!(observable instanceof IQuadTreeObservable)) {
+      return;
+    }
+
+    QuadTree<? extends IShapeData>[] trees = ((IQuadTreeObservable) observable).getTrees();
 
     if (trees.length == 0) {
       return;
@@ -61,5 +72,10 @@ public class Controller implements IController, IObserver {
         view.setPropertyTreeInfo((QuadTree<Property>) trees[i]);
       }
     }
+  }
+
+  public void setView(IMainWindow view) {
+    this.view = view;
+    view.initializeBothQuadTrees();
   }
 }

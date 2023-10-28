@@ -1,6 +1,4 @@
-package mvc.view;
-
-import quadtree.IShapeData;
+package mvc.view.observable;
 
 public interface IObserver {
     void update(IObservable observable);

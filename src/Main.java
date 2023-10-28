@@ -8,16 +8,8 @@ import mvc.view.MainWindow;
 public class Main {
   public static void main(String[] args) {
     ModelWrapper model = new ModelWrapper();
-    MainWindow mainWindow = new MainWindow();
-    Controller controller = new Controller(model, mainWindow);
-    mainWindow.setController(controller);
-
-    Rectangle rectangle =
-        new Rectangle(
-            new GpsCoordinates(Direction.S, 0.0, Direction.E, 0.0),
-            new GpsCoordinates(Direction.S, 10.0, Direction.E, 10.0));
-
-    model.intializeParcelQuadTree(100, rectangle);
-    model.intializePropertyQuadTree(100, rectangle);
+    Controller controller = new Controller(model);
+    MainWindow mainWindow = new MainWindow(controller);
+    controller.setView(mainWindow);
   }
 }
