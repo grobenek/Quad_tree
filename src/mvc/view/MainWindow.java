@@ -2,15 +2,16 @@ package mvc.view;
 
 import entity.Parcel;
 import entity.Property;
+import entity.shape.Rectangle;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.*;
 import mvc.controller.IController;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
 
-public class MainWindow extends JFrame {
+public class MainWindow extends JFrame implements IMainWindow {
 
   private IController controller;
   private JButton insertNewPropertyButton;
@@ -35,9 +36,21 @@ public class MainWindow extends JFrame {
         e -> {
           NewPropertyDialog newPropertyDialog = new NewPropertyDialog(this, controller);
         });
-    seachPropertiesButton.addActionListener(e -> {
 
-    });
+    seachPropertiesButton.addActionListener(
+        e -> {
+          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.PROPERTIES);
+        });
+
+    searchParcelsButton.addActionListener(
+        e -> {
+          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.PARCELS);
+        });
+
+    searchAllButton.addActionListener(
+        e -> {
+          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.ALL);
+        });
   }
 
   public void setParcelTreeInfo(QuadTree<Parcel> parcelQuadTree) {
@@ -71,5 +84,27 @@ public class MainWindow extends JFrame {
 
   public void setController(IController controller) {
     this.controller = controller;
+  }
+
+  @Override
+  public void searchProperties(Rectangle area) {
+    List<Property> result = controller.searchPropertiesInGivenShape(area);
+    resultText.setText(result.toString());
+  }
+
+  @Override
+  public void searchParcels(Rectangle area) {
+    throw new IllegalStateException("Not implemented yet!");
+  }
+
+  @Override
+  public void searchAllObjects(Rectangle area) {
+    List<? extends IShapeData>[] result = controller.searchAllObjectsInGivenShape(area);
+    resultText.setText(Arrays.toString(result));
+  }
+
+  @Override
+  public JFrame getJFrameObject() {
+    return this;
   }
 }
