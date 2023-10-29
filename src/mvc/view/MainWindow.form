@@ -32,22 +32,6 @@
               <text value="Insert new property"/>
             </properties>
           </component>
-          <component id="aebee" class="javax.swing.JButton" binding="editParcelButton" default-binding="true">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Edit parcel"/>
-            </properties>
-          </component>
-          <component id="23881" class="javax.swing.JButton" binding="editPropertyButton">
-            <constraints>
-              <grid row="1" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Edit property"/>
-            </properties>
-          </component>
           <component id="bb96" class="javax.swing.JButton" binding="searchParcelsButton" default-binding="true">
             <constraints>
               <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -98,6 +82,22 @@
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
           </hspacer>
+          <component id="aebee" class="javax.swing.JButton" binding="editParcelButton" default-binding="true">
+            <constraints>
+              <grid row="1" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Edit parcel"/>
+            </properties>
+          </component>
+          <component id="23881" class="javax.swing.JButton" binding="editPropertyButton">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Edit property"/>
+            </properties>
+          </component>
         </children>
       </grid>
       <vspacer id="fa57d">

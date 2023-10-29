@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.*;
 import mvc.controller.IController;
 import mvc.view.constant.DataType;
+import mvc.view.constant.OperationType;
 import mvc.view.constant.SearchCriteria;
 import mvc.view.observable.IObservable;
 import mvc.view.observable.IObserver;
@@ -47,25 +48,34 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
     insertNewPropertyButton.addActionListener(
         e -> {
-          NewPropertyDialog newPropertyDialog = new NewPropertyDialog(this, this.controller);
+          NewDataDialog newPropertyDialog = new NewDataDialog(this, this.controller, DataType.PROPERTY);
         });
+
+    insertNewParcelButton.addActionListener(e -> {
+      NewDataDialog newParcelDialog = new NewDataDialog(this, this.controller, DataType.PARCEL);
+    });
 
     seachPropertiesButton.addActionListener(
         e -> {
-          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.PROPERTIES);
+          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.PROPERTIES, OperationType.SEARCH);
         });
 
     searchParcelsButton.addActionListener(
         e -> {
-          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.PARCELS);
+          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.PARCELS, OperationType.SEARCH);
         });
 
     searchAllButton.addActionListener(
         e -> {
-          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.ALL);
+          GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.ALL, OperationType.SEARCH);
         });
+
     resetTreesButton.addActionListener(e -> {
       initializeBothQuadTrees();
+    });
+
+    editPropertyButton.addActionListener(e -> {
+      GetShapeDialog getShapeDialog = new GetShapeDialog(this, SearchCriteria.PROPERTIES, OperationType.EDIT);
     });
   }
 
@@ -103,24 +113,24 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   }
 
   private void setTextInfoAboutQuadTree(
-      QuadTree<? extends IShapeData> propertyQuadTree, JTextPane propertyTreeInfo) {
-    propertyTreeInfo.setText(
+      QuadTree<? extends IShapeData> quadTree, JTextPane QuadTreeInfoTextPane) {
+    QuadTreeInfoTextPane.setText(
         String.format(
             "Max height: %d\nShape: {x1: %f, y1: %f, x2: %f, y2: %f}\nWidth: %f\nLength: %f\nSize: %d\nItems in root: %d\nItems in North_West: %d\nItems in North_East: %d\nItems in South_West: %d\nItems in South_East: %d\nHealth: %f",
-            propertyQuadTree.getHeight(),
-            propertyQuadTree.getShape().getFirstPoint().widthCoordinate(),
-            propertyQuadTree.getShape().getFirstPoint().lengthCoordinate(),
-            propertyQuadTree.getShape().getSecondPoint().widthCoordinate(),
-            propertyQuadTree.getShape().getSecondPoint().lengthCoordinate(),
-            propertyQuadTree.getShape().getWidth(),
-            propertyQuadTree.getShape().getLength(),
-            propertyQuadTree.getSize(),
-            propertyQuadTree.getItemsInRoot(),
-            propertyQuadTree.getItemsInNorthWest(),
-            propertyQuadTree.getItemsInNorthEast(),
-            propertyQuadTree.getItemsInSouthWest(),
-            propertyQuadTree.getItemsInSouthEast(),
-            propertyQuadTree.getHealthOfQuadTree()));
+            quadTree.getHeight(),
+            quadTree.getShape().getFirstPoint().widthCoordinate(),
+            quadTree.getShape().getFirstPoint().lengthCoordinate(),
+            quadTree.getShape().getSecondPoint().widthCoordinate(),
+            quadTree.getShape().getSecondPoint().lengthCoordinate(),
+            quadTree.getShape().getWidth(),
+            quadTree.getShape().getLength(),
+            quadTree.getSize(),
+            quadTree.getItemsInRoot(),
+            quadTree.getItemsInNorthWest(),
+            quadTree.getItemsInNorthEast(),
+            quadTree.getItemsInSouthWest(),
+            quadTree.getItemsInSouthEast(),
+            quadTree.getHealthOfQuadTree()));
   }
 
   @Override
@@ -131,13 +141,38 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
   @Override
   public void searchParcels(Rectangle area) {
-    throw new IllegalStateException("Not implemented yet!");
+    List<Parcel> result = controller.searchParcelsInGivenShape(area);
+    resultText.setText(result.toString());
   }
 
   @Override
   public void searchAllObjects(Rectangle area) {
     List<? extends IShapeData>[] result = controller.searchAllObjectsInGivenShape(area);
     resultText.setText(Arrays.toString(result));
+  }
+
+  @Override
+  public void editProperty(Rectangle area) {
+    List<Property> result = controller.searchPropertiesInGivenShape(area);
+
+    JComboBox<Property> propertyComboBox = new JComboBox<>(result.toArray(new Property[0]));
+
+    JPanel panel = new JPanel();
+        panel.add(propertyComboBox);
+        int chosenOption = JOptionPane.showConfirmDialog(this, panel, "Select Property", JOptionPane.OK_CANCEL_OPTION);
+
+        if (chosenOption == JOptionPane.OK_OPTION) {
+          Property chosenProperty = (Property) propertyComboBox.getSelectedItem();
+
+          //TODO zavolat newDataDialog ale naplnit ho datami a zistit ktore sa zmenili a podla toho sa rozhodnut ci znovu insertnut, alebo len upravit
+        } else {
+          return;
+        }
+  }
+
+  @Override
+  public void editParcel(Rectangle area) {
+    throw new RuntimeException("Not implemented yet!");
   }
 
   public void initializePropertyQuadTree(int height, Rectangle shape) {

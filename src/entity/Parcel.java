@@ -65,4 +65,8 @@ public class Parcel implements IShapeData {
             && (castedObj.shape == null && shape == null)
         || (castedObj.shape != null && castedObj.shape.equals(shape)));
   }
+
+  public void setProperties(List<Property> properties) {
+    this.properties = properties;
+  }
 }

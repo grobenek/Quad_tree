@@ -3,10 +3,10 @@ package mvc.view;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
-import mvc.view.constant.SearchCriteria;
-
 import java.awt.event.*;
 import javax.swing.*;
+import mvc.view.constant.OperationType;
+import mvc.view.constant.SearchCriteria;
 
 public class GetShapeDialog extends JDialog {
   private JPanel contentPane;
@@ -21,8 +21,11 @@ public class GetShapeDialog extends JDialog {
   private JLabel y2Label;
   private final IMainWindow mainWindow;
   private final SearchCriteria searchCriteria;
+  private final OperationType operationType;
 
-  public GetShapeDialog(IMainWindow mainWindow, SearchCriteria searchCriteria) {
+  public GetShapeDialog(
+      IMainWindow mainWindow, SearchCriteria searchCriteria, OperationType operationType) {
+    this.operationType = operationType;
     this.searchCriteria = searchCriteria;
     this.mainWindow = mainWindow;
     setContentPane(contentPane);
@@ -70,8 +73,20 @@ public class GetShapeDialog extends JDialog {
             Float.parseFloat(y2TextField.getText()));
 
     switch (searchCriteria) {
-      case PROPERTIES -> mainWindow.searchProperties(new Rectangle(bottomLeftPoint, topRightPoint));
-      case PARCELS -> mainWindow.searchParcels(new Rectangle(bottomLeftPoint, topRightPoint));
+      case PROPERTIES -> {
+        switch (operationType) {
+          case SEARCH -> mainWindow.searchProperties(new Rectangle(bottomLeftPoint, topRightPoint));
+          case EDIT -> mainWindow.editProperty(new Rectangle(bottomLeftPoint, topRightPoint));
+          case DELETE -> throw new RuntimeException("Not yet implemented!");
+        }
+      }
+      case PARCELS -> {
+        switch (operationType) {
+          case SEARCH -> mainWindow.searchParcels(new Rectangle(bottomLeftPoint, topRightPoint));
+          case EDIT -> mainWindow.editParcel(new Rectangle(bottomLeftPoint, topRightPoint));
+          case DELETE -> throw new RuntimeException("Not yet imlemented!");
+        }
+      }
       case ALL -> mainWindow.searchAllObjects(new Rectangle(bottomLeftPoint, topRightPoint));
     }
 

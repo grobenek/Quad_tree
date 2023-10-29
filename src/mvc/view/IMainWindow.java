@@ -14,6 +14,8 @@ public interface IMainWindow {
   void searchProperties(Rectangle area);
   void searchParcels(Rectangle area);
   void searchAllObjects(Rectangle area);
+  void editProperty(Rectangle area);
+  void editParcel(Rectangle area);
   void initializeBothQuadTrees();
   void showPopupMessage(String message);
   JFrame getJFrameObject();

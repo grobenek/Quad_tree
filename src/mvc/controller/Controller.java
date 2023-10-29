@@ -52,12 +52,20 @@ public class Controller implements IController, IObserver {
   }
 
   @Override
-  public Property addProperty(int registerNumber, String description, Rectangle shape) {
+  public void addProperty(int registerNumber, String description, Rectangle shape) {
     try {
-      return model.addProperty(registerNumber, description, shape);
+      model.addProperty(registerNumber, description, shape);
     } catch (Exception exception) {
       view.showPopupMessage(exception.getLocalizedMessage());
-      return null;
+    }
+  }
+
+  @Override
+  public void addParcel(int parcelNumber, String description, Rectangle shape) {
+    try {
+      model.addParcel(parcelNumber, description, shape);
+    } catch (Exception exception) {
+      view.showPopupMessage(exception.getLocalizedMessage());
     }
   }
 

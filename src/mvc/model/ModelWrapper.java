@@ -59,7 +59,7 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   }
 
   @Override
-  public Property addProperty(int registerNumber, String description, Rectangle shape) {
+  public void addProperty(int registerNumber, String description, Rectangle shape) {
     Property property = new Property(registerNumber, description, shape);
 
     propertyQuadTree.insert(property);
@@ -67,8 +67,17 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
     property.setParcels(parcelQuadTree.search(shape));
 
     sendNotifications();
+  }
 
-    return property;
+  @Override
+  public void addParcel(int parcelNumber, String description, Rectangle shape) {
+    Parcel parcel = new Parcel(parcelNumber, description, shape);
+
+    parcelQuadTree.insert(parcel);
+
+    parcel.setProperties(propertyQuadTree.search(shape));
+
+    sendNotifications();
   }
 
   @Override
