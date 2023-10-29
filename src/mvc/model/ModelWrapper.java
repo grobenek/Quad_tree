@@ -66,6 +66,12 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
 
     property.setParcels(parcelQuadTree.search(shape));
 
+    List<Parcel> parcels = parcelQuadTree.search(shape);
+
+    for (Parcel parcel : parcels) {
+      parcel.addProperty(property);
+    }
+
     sendNotifications();
   }
 
@@ -77,7 +83,32 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
 
     parcel.setProperties(propertyQuadTree.search(shape));
 
+    List<Property> properties = propertyQuadTree.search(shape);
+    for (Property property : properties) {
+      property.addParcel(parcel);
+    }
+
     sendNotifications();
+  }
+
+  @Override
+  public void deleteProperty(Property propertyToDelete) {
+    List<Parcel> parcels = parcelQuadTree.search(propertyToDelete.getShapeOfData());
+    for (Parcel parcel : parcels) {
+      parcel.removeProperty(propertyToDelete);
+    }
+
+    propertyQuadTree.deleteData(propertyToDelete);
+  }
+
+  @Override
+  public void deleteParcel(Parcel parcelToDelete) {
+    List<Property> properties = propertyQuadTree.search(parcelToDelete.getShapeOfData());
+    for (Property property : properties) {
+      property.removeParcel(parcelToDelete);
+    }
+
+    parcelQuadTree.deleteData(parcelToDelete);
   }
 
   @Override

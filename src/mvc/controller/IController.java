@@ -13,6 +13,8 @@ public interface IController extends IObserver {
   List<? extends IShapeData>[] searchAllObjectsInGivenShape(Rectangle shapeToSearchIn);
   void addProperty(int registerNumber, String description, Rectangle shape);
   void addParcel(int parcelNumber, String description, Rectangle shape);
+  void deleteProperty(Property propertyToDelete);
+  void deleteParcel(Parcel parcelToDelete);
   void initializePropertyQuadTree(int height, Rectangle shape);
   void initializeParcelQuadTree(int height, Rectangle shape);
 }

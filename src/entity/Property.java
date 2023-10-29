@@ -26,8 +26,16 @@ public class Property implements IShapeData {
     return shape;
   }
 
+  public int getRegisterNumber() {
+    return registerNumber;
+  }
+
   public void setRegisterNumber(int registerNumber) {
     this.registerNumber = registerNumber;
+  }
+
+  public String getDescription() {
+    return description;
   }
 
   public void setDescription(String description) {
@@ -40,6 +48,10 @@ public class Property implements IShapeData {
 
   public void addParcel(Parcel parcel) {
     parcels.add(parcel);
+  }
+
+  public void removeParcel(Parcel parcel) {
+    parcels.remove(parcel);
   }
 
   public void setParcels(List<Parcel> parcels) {
@@ -55,7 +67,7 @@ public class Property implements IShapeData {
         + description
         + '\''
         + ", parcels="
-        + parcels
+        + parcels.size()
         + ", shape="
         + shape
         + '}';

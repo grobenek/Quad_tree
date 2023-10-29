@@ -3,7 +3,6 @@ package mvc.view;
 import entity.Parcel;
 import entity.Property;
 import entity.shape.Rectangle;
-import mvc.controller.IController;
 import quadtree.QuadTree;
 
 import javax.swing.*;
@@ -16,6 +15,8 @@ public interface IMainWindow {
   void searchAllObjects(Rectangle area);
   void editProperty(Rectangle area);
   void editParcel(Rectangle area);
+  void deleteProperty(Rectangle shape);
+  void deleteParcel(Rectangle shape);
   void initializeBothQuadTrees();
   void showPopupMessage(String message);
   JFrame getJFrameObject();

@@ -70,6 +70,16 @@ public class Controller implements IController, IObserver {
   }
 
   @Override
+  public void deleteProperty(Property propertyToDelete) {
+    model.deleteProperty(propertyToDelete);
+  }
+
+  @Override
+  public void deleteParcel(Parcel parcelToDelete) {
+    model.deleteParcel(parcelToDelete);
+  }
+
+  @Override
   public void initializePropertyQuadTree(int height, Rectangle shape) {
     try {
       model.initializePropertyQuadTree(height, shape);

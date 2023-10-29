@@ -1,9 +1,8 @@
 package entity;
 
 import entity.shape.Rectangle;
-import quadtree.IShapeData;
-
 import java.util.List;
+import quadtree.IShapeData;
 
 public class Parcel implements IShapeData {
   private int parcelNumber;
@@ -43,12 +42,17 @@ public class Parcel implements IShapeData {
 
   @Override
   public String toString() {
-    return "Parcel{" +
-            "parcelNumber=" + parcelNumber +
-            ", description='" + description + '\'' +
-            ", properties=" + properties +
-            ", shape=" + shape +
-            '}';
+    return "Parcel{"
+        + "parcelNumber="
+        + parcelNumber
+        + ", description='"
+        + description
+        + '\''
+        + ", properties="
+        + properties.size()
+        + ", shape="
+        + shape
+        + '}';
   }
 
    @Override
@@ -68,5 +72,21 @@ public class Parcel implements IShapeData {
 
   public void setProperties(List<Property> properties) {
     this.properties = properties;
+  }
+
+  public void setParcelNumber(int parcelNumber) {
+    this.parcelNumber = parcelNumber;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void addProperty(Property property) {
+    properties.add(property);
+  }
+
+  public void removeProperty(Property propertyToDelete) {
+    properties.remove(propertyToDelete);
   }
 }

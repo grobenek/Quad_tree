@@ -6,6 +6,7 @@ import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
 import java.awt.event.*;
+import java.util.Objects;
 import javax.swing.*;
 import mvc.controller.IController;
 import mvc.view.constant.DataType;
@@ -14,8 +15,8 @@ public class NewDataDialog extends JDialog {
   private JPanel contentPane;
   private JButton buttonOK;
   private JButton buttonCancel;
-  private JTextField registrationNumberTextField;
-  private JLabel registrationNumberLabel;
+  private JTextField identificationNumberNumberTextField;
+  private JLabel identificationNumberLabel;
   private JTextField descriptionTextField;
   private JLabel descriptionLabel;
   private JPanel shapeJPanel;
@@ -28,26 +29,46 @@ public class NewDataDialog extends JDialog {
   private JTextField y2TextField;
   private JLabel x2Label;
   private JLabel y2Label;
-  private IController controller;
+  private final IController controller;
   private final DataType dataType;
 
-  public NewDataDialog(JFrame mainWindow, IController controller, DataType dataType, Object dataToFillIntoTextFields) {
+  public NewDataDialog(
+      JFrame mainWindow,
+      IController controller,
+      DataType dataType,
+      Object dataToFillIntoTextFields) {
     this.dataType = dataType;
     this.controller = controller;
 
-    if (dataToFillIntoTextFields instanceof Parcel) {
-      //TODO fill data into textFields
+    if (dataToFillIntoTextFields instanceof Parcel parcelToAddData) {
+      identificationNumberNumberTextField.setText(
+          String.valueOf(parcelToAddData.getParcelNumber()));
+      descriptionTextField.setText(parcelToAddData.getDescription());
+
+      Rectangle shapeOfParcel = parcelToAddData.getShapeOfData();
+      x1TextField.setText(String.valueOf(shapeOfParcel.getFirstPoint().widthCoordinate()));
+      y1TextField.setText(String.valueOf(shapeOfParcel.getFirstPoint().lengthCoordinate()));
+      x2TextField.setText(String.valueOf(shapeOfParcel.getSecondPoint().widthCoordinate()));
+      y2TextField.setText(String.valueOf(shapeOfParcel.getSecondPoint().lengthCoordinate()));
     }
 
-    if (dataToFillIntoTextFields instanceof Property) {
-      //TODO fill data into textFields
+    if (dataToFillIntoTextFields instanceof Property propertyToAdd) {
+      identificationNumberNumberTextField.setText(
+          String.valueOf(propertyToAdd.getRegisterNumber()));
+      descriptionTextField.setText(propertyToAdd.getDescription());
+
+      Rectangle shapeOfParcel = propertyToAdd.getShapeOfData();
+      x1TextField.setText(String.valueOf(shapeOfParcel.getFirstPoint().widthCoordinate()));
+      y1TextField.setText(String.valueOf(shapeOfParcel.getFirstPoint().lengthCoordinate()));
+      x2TextField.setText(String.valueOf(shapeOfParcel.getSecondPoint().widthCoordinate()));
+      y2TextField.setText(String.valueOf(shapeOfParcel.getSecondPoint().lengthCoordinate()));
     }
 
     setContentPane(contentPane);
     setModal(true);
     getRootPane().setDefaultButton(buttonOK);
 
-    buttonOK.addActionListener(e -> onOK());
+    buttonOK.addActionListener(e -> onOK(dataToFillIntoTextFields));
 
     buttonCancel.addActionListener(e -> onCancel());
 
@@ -68,7 +89,7 @@ public class NewDataDialog extends JDialog {
 
     setSize(200, 400);
     setAutoRequestFocus(true);
-    setTitle("Create new Property");
+    setTitle("Edit Property");
     setLocationRelativeTo(mainWindow);
     setVisible(true);
   }
@@ -106,6 +127,103 @@ public class NewDataDialog extends JDialog {
     setVisible(true);
   }
 
+  private void onOK(Object filledData) {
+
+    GpsCoordinates bottomLeftPoint =
+        new GpsCoordinates(
+            Direction.S,
+            Float.parseFloat(x1TextField.getText()),
+            Direction.W,
+            Float.parseFloat(y1TextField.getText()));
+    GpsCoordinates topRightPoint =
+        new GpsCoordinates(
+            Direction.N,
+            Float.parseFloat(x2TextField.getText()),
+            Direction.E,
+            Float.parseFloat(y2TextField.getText()));
+
+    Rectangle rectangleOfEditedData = new Rectangle(bottomLeftPoint, topRightPoint);
+
+    boolean hasIdentificationNumberChanged = false;
+    boolean hasDescriptionChanged = false;
+    boolean haveCoordinatesChanged = false;
+
+    if (filledData instanceof Parcel filledParcel) {
+
+      if ((Integer.parseInt(identificationNumberNumberTextField.getText()))
+          != filledParcel.getParcelNumber()) {
+        hasIdentificationNumberChanged = true;
+      }
+
+      if (!Objects.equals(descriptionTextField.getText(), filledParcel.getDescription())) {
+        hasDescriptionChanged = true;
+      }
+
+      if (!(rectangleOfEditedData.equals((filledParcel.getShapeOfData())))) {
+        haveCoordinatesChanged = true;
+      }
+
+      // only identification number or description changed - no need to reinsert data
+      if (!haveCoordinatesChanged) {
+        if (hasDescriptionChanged) {
+          filledParcel.setDescription(descriptionTextField.getText());
+        }
+
+        if (hasIdentificationNumberChanged) {
+          filledParcel.setParcelNumber(
+              Integer.parseInt(identificationNumberNumberTextField.getText()));
+        }
+      }
+
+      // need to reinsert edited data
+      if (haveCoordinatesChanged) {
+        controller.deleteParcel(filledParcel);
+        controller.addParcel(
+            Integer.parseInt(identificationNumberNumberTextField.getText()),
+            descriptionTextField.getText(),
+            rectangleOfEditedData);
+      }
+    }
+
+    if (filledData instanceof Property filledProperty) {
+      if ((Integer.parseInt(identificationNumberNumberTextField.getText()))
+          != filledProperty.getRegisterNumber()) {
+        hasIdentificationNumberChanged = true;
+      }
+
+      if (!Objects.equals(descriptionTextField.getText(), filledProperty.getDescription())) {
+        hasDescriptionChanged = true;
+      }
+
+      if (!(rectangleOfEditedData.equals(filledProperty.getShapeOfData()))) {
+        haveCoordinatesChanged = true;
+      }
+
+      // only identification number or description changed - no need to reinsert data
+      if (!haveCoordinatesChanged) {
+        if (hasDescriptionChanged) {
+          filledProperty.setDescription(descriptionTextField.getText());
+        }
+
+        if (hasIdentificationNumberChanged) {
+          filledProperty.setRegisterNumber(
+              Integer.parseInt(identificationNumberNumberTextField.getText()));
+        }
+      }
+
+      // need to reinsert edited data
+      if (haveCoordinatesChanged) {
+        controller.deleteProperty(filledProperty);
+        controller.addProperty(
+            Integer.parseInt(identificationNumberNumberTextField.getText()),
+            descriptionTextField.getText(),
+            rectangleOfEditedData);
+      }
+    }
+
+    dispose();
+  }
+
   private void onOK() {
     GpsCoordinates bottomLeftPoint =
         new GpsCoordinates(
@@ -123,13 +241,13 @@ public class NewDataDialog extends JDialog {
     switch (dataType) {
       case PROPERTY -> {
         controller.addProperty(
-            Integer.parseInt(registrationNumberTextField.getText()),
+            Integer.parseInt(identificationNumberNumberTextField.getText()),
             descriptionTextField.getText(),
             new Rectangle(bottomLeftPoint, topRightPoint));
       }
       case PARCEL -> {
         controller.addParcel(
-            Integer.parseInt(registrationNumberTextField.getText()),
+            Integer.parseInt(identificationNumberNumberTextField.getText()),
             descriptionTextField.getText(),
             new Rectangle(bottomLeftPoint, topRightPoint));
       }

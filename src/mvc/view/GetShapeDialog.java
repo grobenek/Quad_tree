@@ -72,25 +72,24 @@ public class GetShapeDialog extends JDialog {
             Direction.E,
             Float.parseFloat(y2TextField.getText()));
 
+    dispose();
     switch (searchCriteria) {
       case PROPERTIES -> {
         switch (operationType) {
           case SEARCH -> mainWindow.searchProperties(new Rectangle(bottomLeftPoint, topRightPoint));
           case EDIT -> mainWindow.editProperty(new Rectangle(bottomLeftPoint, topRightPoint));
-          case DELETE -> throw new RuntimeException("Not yet implemented!");
+          case DELETE -> mainWindow.deleteProperty(new Rectangle(bottomLeftPoint, topRightPoint));
         }
       }
       case PARCELS -> {
         switch (operationType) {
           case SEARCH -> mainWindow.searchParcels(new Rectangle(bottomLeftPoint, topRightPoint));
           case EDIT -> mainWindow.editParcel(new Rectangle(bottomLeftPoint, topRightPoint));
-          case DELETE -> throw new RuntimeException("Not yet imlemented!");
+          case DELETE -> mainWindow.deleteParcel(new Rectangle(bottomLeftPoint, topRightPoint));
         }
       }
       case ALL -> mainWindow.searchAllObjects(new Rectangle(bottomLeftPoint, topRightPoint));
     }
-
-    dispose();
   }
 
   private void onCancel() {
