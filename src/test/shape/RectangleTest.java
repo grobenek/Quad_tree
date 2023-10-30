@@ -1,10 +1,13 @@
 package test.shape;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class RectangleTest {
 
@@ -12,7 +15,7 @@ class RectangleTest {
   private Rectangle testPoint;
   private Rectangle testRectangle;
 
-  @org.junit.jupiter.api.BeforeEach
+  @BeforeEach
   void setUp() {
     GpsCoordinates squareBottomLeft = new GpsCoordinates(Direction.S, 0, Direction.W, 0);
     GpsCoordinates squareTopRightPoint = new GpsCoordinates(Direction.N, 10, Direction.E, 10);
@@ -27,37 +30,37 @@ class RectangleTest {
     testRectangle = new Rectangle(rectangleBottomLeft, rectangleTopRight);
   }
 
-  @org.junit.jupiter.api.Test
+  @Test
   void getWidthOfSquare() {
     assertNotNull(testSquare);
     assertEquals(10, testSquare.getWidth());
   }
 
-  @org.junit.jupiter.api.Test
+  @Test
   void getLengthOfSquare() {
     assertNotNull(testSquare);
     assertEquals(10, testSquare.getLength());
   }
 
-  @org.junit.jupiter.api.Test
+  @Test
   void getWidthOfPoint() {
     assertNotNull(testPoint);
     assertEquals(0, testPoint.getWidth());
   }
 
-  @org.junit.jupiter.api.Test
+  @Test
   void getLengthOfPoint() {
     assertNotNull(testSquare);
     assertEquals(0, testPoint.getLength());
   }
 
-  @org.junit.jupiter.api.Test
+  @Test
   void getWidthOfRectangle() {
     assertNotNull(testRectangle);
     assertEquals(2, testRectangle.getWidth());
   }
 
-  @org.junit.jupiter.api.Test
+  @Test
   void getLengthOfRectangle() {
     assertNotNull(testRectangle);
     assertEquals(3, testRectangle.getLength());
