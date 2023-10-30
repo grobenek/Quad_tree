@@ -1,6 +1,8 @@
 package entity;
 
 import entity.shape.Rectangle;
+
+import java.util.LinkedList;
 import java.util.List;
 import quadtree.IShapeData;
 
@@ -21,6 +23,7 @@ public class Parcel implements IShapeData {
     this.parcelNumber = parcelNumber;
     this.description = description;
     this.shape = shape;
+    this.properties = new LinkedList<>();
   }
 
   public int getParcelNumber() {

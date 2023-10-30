@@ -1,6 +1,8 @@
 package entity;
 
 import entity.shape.Rectangle;
+
+import java.util.LinkedList;
 import java.util.List;
 import quadtree.IShapeData;
 
@@ -14,11 +16,13 @@ public class Property implements IShapeData {
     this.registerNumber = registerNumber;
     this.description = description;
     this.shape = shape;
+    this.parcels = new LinkedList<>();
   }
 
   public Property(int registerNumber, String description) {
     this.registerNumber = registerNumber;
     this.description = description;
+    this.parcels = new LinkedList<>();
   }
 
   @Override
