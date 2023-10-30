@@ -1,11 +1,13 @@
 package entity.shape;
 
-/**
- * @param width N or S
- * @param length E or W
- */
+/** */
 public record GpsCoordinates(
     Direction width, double widthCoordinate, Direction length, double lengthCoordinate) {
+  /**
+   * @param width N or S
+   * @param length E or W
+   */
+  public GpsCoordinates {}
 
   @Override
   public boolean equals(Object obj) {
