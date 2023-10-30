@@ -19,7 +19,7 @@ import quadtree.QuadTree;
 
 public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
-  private IController controller;
+  private final IController controller;
   private JButton insertNewPropertyButton;
   private JButton seachPropertiesButton;
   private JButton searchParcelsButton;

@@ -3,18 +3,17 @@ package mvc.view;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
-import mvc.view.constant.DataType;
-import mvc.view.observable.IObserver;
-import mvc.view.observable.IQuadTreeParametersObservable;
-
 import java.awt.event.*;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.*;
+import mvc.view.constant.DataType;
+import mvc.view.observable.IObserver;
+import mvc.view.observable.IQuadTreeParametersObservable;
 
 public class InitializeQuadTree extends JDialog implements IQuadTreeParametersObservable {
-  private List<IObserver> observers;
-  private DataType quadTreeDataType;
+  private final List<IObserver> observers;
+  private final DataType quadTreeDataType;
   private JPanel contentPane;
   private JButton buttonOK;
   private JButton buttonCancel;
