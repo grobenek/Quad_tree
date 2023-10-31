@@ -16,7 +16,6 @@ public interface IModel extends IObservable {
     void addParcel(int parcelNumber, String description, Rectangle shape);
     void deleteProperty(Property propertyToDelete);
     void deleteParcel(Parcel parcelToDelete);
-    void generateDataForBothTrees();
     void initializePropertyQuadTree(int height, Rectangle shape);
     void initializeParcelQuadTree(int height, Rectangle shape);
     void generateData(int numberOfProperties, int numberOfParcels);

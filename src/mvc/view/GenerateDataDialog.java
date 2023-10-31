@@ -46,6 +46,7 @@ public class GenerateDataDialog extends JDialog {
   }
 
   private void onOK() {
+    setVisible(false);
     mainWindow.generateData(
         Integer.parseInt(numberOfPropertiesTextField.getText()),
         Integer.parseInt(numberOfParcelsTextField.getText()));

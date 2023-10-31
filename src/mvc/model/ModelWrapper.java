@@ -39,11 +39,11 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
 
   @Override
   public void generateData(int numberOfProperties, int numberOfParcels) {
-    generateProperties(numberOfProperties, DataType.PROPERTY);
-    generateProperties(numberOfParcels, DataType.PARCEL);
+    generateData(numberOfProperties, DataType.PROPERTY);
+    generateData(numberOfParcels, DataType.PARCEL);
   }
 
-  private void generateProperties(int numberOfItemsToInsert, DataType dataTypeToInsert) {
+  private void generateData(int numberOfItemsToInsert, DataType dataTypeToInsert) {
     for (int i = 0; i < numberOfItemsToInsert; i++) {
       Rectangle quadTreeShape;
 
@@ -118,11 +118,10 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
 
     propertyQuadTree.insert(property);
 
-    property.setParcels(parcelQuadTree.search(shape));
-
     List<Parcel> parcels = parcelQuadTree.search(shape);
 
     for (Parcel parcel : parcels) {
+      property.addParcel(parcel);
       parcel.addProperty(property);
     }
 
@@ -135,10 +134,10 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
 
     parcelQuadTree.insert(parcel);
 
-    parcel.setProperties(propertyQuadTree.search(shape));
-
     List<Property> properties = propertyQuadTree.search(shape);
+
     for (Property property : properties) {
+      parcel.addProperty(property);
       property.addParcel(parcel);
     }
 
@@ -164,9 +163,6 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
 
     parcelQuadTree.deleteData(parcelToDelete);
   }
-
-  @Override
-  public void generateDataForBothTrees() {}
 
   @Override
   public void attach(IObserver observer) {
