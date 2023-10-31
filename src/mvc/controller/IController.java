@@ -17,4 +17,5 @@ public interface IController extends IObserver {
   void deleteParcel(Parcel parcelToDelete);
   void initializePropertyQuadTree(int height, Rectangle shape);
   void initializeParcelQuadTree(int height, Rectangle shape);
+  void generateData(int numberOfProperties, int numberOfParcels);
 }

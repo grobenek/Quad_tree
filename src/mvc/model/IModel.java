@@ -19,4 +19,5 @@ public interface IModel extends IObservable {
     void generateDataForBothTrees();
     void initializePropertyQuadTree(int height, Rectangle shape);
     void initializeParcelQuadTree(int height, Rectangle shape);
+    void generateData(int numberOfProperties, int numberOfParcels);
 }

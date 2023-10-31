@@ -2,9 +2,13 @@ package mvc.model;
 
 import entity.Parcel;
 import entity.Property;
+import entity.shape.Direction;
+import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import mvc.view.constant.DataType;
 import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeObservable;
 import quadtree.IShapeData;
@@ -13,11 +17,12 @@ import quadtree.QuadTree;
 public class ModelWrapper implements IModel, IQuadTreeObservable {
   QuadTree<Property> propertyQuadTree;
   QuadTree<Parcel> parcelQuadTree;
-
   List<IObserver> observers;
+  Random randomGenerator;
 
   public ModelWrapper() {
     this.observers = new LinkedList<>();
+    this.randomGenerator = new Random();
   }
 
   @Override
@@ -30,6 +35,55 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   public void initializeParcelQuadTree(int height, Rectangle shape) {
     parcelQuadTree = new QuadTree<>(height, shape);
     sendNotifications();
+  }
+
+  @Override
+  public void generateData(int numberOfProperties, int numberOfParcels) {
+    generateProperties(numberOfProperties, DataType.PROPERTY);
+    generateProperties(numberOfParcels, DataType.PARCEL);
+  }
+
+  private void generateProperties(int numberOfItemsToInsert, DataType dataTypeToInsert) {
+    for (int i = 0; i < numberOfItemsToInsert; i++) {
+      Rectangle quadTreeShape;
+
+      switch (dataTypeToInsert) {
+        case PROPERTY -> quadTreeShape = propertyQuadTree.getShape();
+        case PARCEL -> quadTreeShape = parcelQuadTree.getShape();
+        default -> throw new IllegalArgumentException(
+            "Invalid data type: " + dataTypeToInsert.name());
+      }
+
+      GpsCoordinates firstPointOfItem =
+          new GpsCoordinates(
+              Direction.S,
+              (randomGenerator.nextDouble(
+                  quadTreeShape.getFirstPoint().widthCoordinate(),
+                  quadTreeShape.getSecondPoint().widthCoordinate())),
+              Direction.W,
+              (randomGenerator.nextDouble(
+                  quadTreeShape.getFirstPoint().lengthCoordinate(),
+                  quadTreeShape.getSecondPoint().lengthCoordinate())));
+      GpsCoordinates secondPointOfItem =
+          new GpsCoordinates(
+              Direction.S,
+              (randomGenerator.nextDouble(
+                  quadTreeShape.getFirstPoint().widthCoordinate(),
+                  quadTreeShape.getSecondPoint().widthCoordinate())),
+              Direction.W,
+              (randomGenerator.nextDouble(
+                  quadTreeShape.getFirstPoint().lengthCoordinate(),
+                  quadTreeShape.getSecondPoint().lengthCoordinate())));
+
+      switch (dataTypeToInsert) {
+        case PROPERTY -> addProperty(
+            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem));
+        case PARCEL -> addParcel(
+            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem));
+        default -> throw new IllegalArgumentException(
+            "Invalid data type: " + dataTypeToInsert.name());
+      }
+    }
   }
 
   @Override

@@ -104,6 +104,11 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
           GetShapeDialog getShapeDialog =
               new GetShapeDialog(this, SearchCriteria.PARCELS, OperationType.DELETE);
         });
+
+    generateDataButton.addActionListener(
+        e -> {
+          GenerateDataDialog generateDataDialog = new GenerateDataDialog(this);
+        });
   }
 
   @Override
@@ -115,6 +120,11 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
     InitializeQuadTree initializePropertyQuadTree = new InitializeQuadTree(this, DataType.PROPERTY);
     initializePropertyQuadTree.attach(this);
     initializePropertyQuadTree.setVisible(true);
+  }
+
+  @Override
+  public void generateData(int numberOfProperties, int numberOfParcels) {
+    controller.generateData(numberOfProperties, numberOfParcels);
   }
 
   @Override

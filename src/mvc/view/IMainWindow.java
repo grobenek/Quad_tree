@@ -18,6 +18,7 @@ public interface IMainWindow {
   void deleteProperty(Rectangle shape);
   void deleteParcel(Rectangle shape);
   void initializeBothQuadTrees();
+  void generateData(int numberOfProperties, int numberOfParcels);
   void showPopupMessage(String message);
   JFrame getJFrameObject();
 }

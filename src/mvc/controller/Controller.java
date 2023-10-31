@@ -98,6 +98,11 @@ public class Controller implements IController, IObserver {
   }
 
   @Override
+  public void generateData(int numberOfProperties, int numberOfParcels) {
+    model.generateData(numberOfProperties, numberOfParcels);
+  }
+
+  @Override
   public void update(IObservable observable) {
     if (!(observable instanceof IQuadTreeObservable)) {
       return;
