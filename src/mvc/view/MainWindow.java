@@ -16,6 +16,8 @@ import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeParametersObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
+import util.CsvBuilder;
+import util.IFileBuilder;
 
 public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
@@ -35,6 +37,8 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   private JButton editParcelButton;
   private JButton deletePropertyButton;
   private JButton deleteParcelButton;
+  private JButton saveButton;
+  private JButton loadButton;
 
   public MainWindow(IController controller) throws HeadlessException {
     this.controller = controller;
@@ -109,6 +113,18 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
         e -> {
           GenerateDataDialog generateDataDialog = new GenerateDataDialog(this);
         });
+
+    saveButton.addActionListener(
+        e -> {
+          saveDataFromFile("parcels.csv", DataType.PARCEL, new CsvBuilder());
+          saveDataFromFile("properties.csv", DataType.PROPERTY, new CsvBuilder());
+        });
+
+    loadButton.addActionListener(
+        e -> {
+          loadDataFromFile("parcels.csv", new CsvBuilder());
+          loadDataFromFile("properties.csv", new CsvBuilder());
+        });
   }
 
   @Override
@@ -123,6 +139,24 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
     resultText.setText("Loading!");
     controller.generateData(numberOfProperties, numberOfParcels);
     resultText.setText("Done!");
+  }
+
+  @Override
+  public void saveDataFromFile(String pathToFile, DataType dataType, IFileBuilder fileBuilder) {
+    try {
+      controller.saveDataFromFile(pathToFile, dataType, fileBuilder);
+    } catch (Exception exception) {
+      showPopupMessage(exception.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  public void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) {
+    try {
+      controller.loadDataFromFile(pathToFile, fileBuilder);
+    } catch (Exception exception) {
+      showPopupMessage(exception.getLocalizedMessage());
+    }
   }
 
   @Override

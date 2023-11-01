@@ -1,11 +1,12 @@
 package quadtree;
 
+import entity.SpatialData;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
 import java.util.*;
 
-public class QuadTree<T extends IShapeData> {
+public class QuadTree<T extends SpatialData<?>> {
   private int height;
   private Rectangle shape;
   private QuadNode<T> root;

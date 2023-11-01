@@ -2,9 +2,11 @@ package mvc.model;
 
 import entity.Parcel;
 import entity.Property;
+import entity.SpatialData;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -13,6 +15,8 @@ import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
+import util.IFileBuilder;
+import util.IOManager;
 
 public class ModelWrapper implements IModel, IQuadTreeObservable {
   QuadTree<Property> propertyQuadTree;
@@ -41,6 +45,58 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   public void generateData(int numberOfProperties, int numberOfParcels) {
     generateData(numberOfProperties, DataType.PROPERTY);
     generateData(numberOfParcels, DataType.PARCEL);
+  }
+
+  @Override
+  public void saveDataFromFile(String pathToFile, DataType datatype, IFileBuilder fileBuilder)
+      throws IOException {
+    List<? extends SpatialData<?>> dataToSave;
+
+    switch (datatype) {
+      case PARCEL -> dataToSave = parcelQuadTree.search(parcelQuadTree.getShape());
+      case PROPERTY -> dataToSave = propertyQuadTree.search(propertyQuadTree.getShape());
+      default -> throw new IllegalArgumentException(
+          String.format("Unsupported datatype %s", datatype.name()));
+    }
+
+    new IOManager(fileBuilder).saveToFile(pathToFile, dataToSave);
+  }
+
+  @Override
+  public void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) throws IOException {
+    IOManager ioManager = new IOManager(fileBuilder);
+    ioManager.loadFromFile(pathToFile);
+
+    List<SpatialData<?>> loadedItems = fileBuilder.getLoadedData();
+
+    if (loadedItems.isEmpty()) {
+      return;
+    }
+
+    if (loadedItems.get(0) instanceof Property) {
+      propertyQuadTree = new QuadTree<>(propertyQuadTree.getHeight(), propertyQuadTree.getShape());
+      for (SpatialData<?> loadedItem : loadedItems) {
+        Property loadedProperty = (Property) loadedItem;
+        addProperty(
+            loadedProperty.getIdentificationNumber(),
+            loadedProperty.getDescription(),
+            loadedProperty.getShapeOfData());
+      }
+    } else if (loadedItems.get(0) instanceof Parcel) {
+      parcelQuadTree = new QuadTree<>(parcelQuadTree.getHeight(), parcelQuadTree.getShape());
+      for (SpatialData<?> loadedItem : loadedItems) {
+        Parcel loadedParcel = (Parcel) loadedItem;
+        addParcel(
+            loadedParcel.getIdentificationNumber(),
+            loadedParcel.getDescription(),
+            loadedParcel.getShapeOfData());
+      }
+    } else {
+      throw new IllegalStateException(
+          String.format(
+              "Unsupported object %s found when loading file %s",
+              loadedItems.get(0).getClass().getName(), pathToFile));
+    }
   }
 
   private void generateData(int numberOfItemsToInsert, DataType dataTypeToInsert) {
@@ -121,8 +177,8 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
     List<Parcel> parcels = parcelQuadTree.search(shape);
 
     for (Parcel parcel : parcels) {
-      property.addParcel(parcel);
-      parcel.addProperty(property);
+      property.addRelatedData(parcel);
+      parcel.addRelatedData(property);
     }
 
     sendNotifications();
@@ -137,8 +193,8 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
     List<Property> properties = propertyQuadTree.search(shape);
 
     for (Property property : properties) {
-      parcel.addProperty(property);
-      property.addParcel(parcel);
+      parcel.addRelatedData(property);
+      property.addRelatedData(parcel);
     }
 
     sendNotifications();
@@ -148,7 +204,7 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   public void deleteProperty(Property propertyToDelete) {
     List<Parcel> parcels = parcelQuadTree.search(propertyToDelete.getShapeOfData());
     for (Parcel parcel : parcels) {
-      parcel.removeProperty(propertyToDelete);
+      parcel.removeRelatedData(propertyToDelete);
     }
 
     propertyQuadTree.deleteData(propertyToDelete);
@@ -158,7 +214,7 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   public void deleteParcel(Parcel parcelToDelete) {
     List<Property> properties = propertyQuadTree.search(parcelToDelete.getShapeOfData());
     for (Property property : properties) {
-      property.removeParcel(parcelToDelete);
+      property.removeRelatedData(parcelToDelete);
     }
 
     parcelQuadTree.deleteData(parcelToDelete);
