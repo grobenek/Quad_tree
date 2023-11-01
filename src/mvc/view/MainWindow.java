@@ -113,18 +113,16 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
   @Override
   public void initializeBothQuadTrees() {
-    InitializeQuadTree initializeParcelQuadTree = new InitializeQuadTree(this, DataType.PARCEL);
+    InitializeQuadTree initializeParcelQuadTree = new InitializeQuadTree(this);
     initializeParcelQuadTree.attach(this);
     initializeParcelQuadTree.setVisible(true);
-
-    InitializeQuadTree initializePropertyQuadTree = new InitializeQuadTree(this, DataType.PROPERTY);
-    initializePropertyQuadTree.attach(this);
-    initializePropertyQuadTree.setVisible(true);
   }
 
   @Override
   public void generateData(int numberOfProperties, int numberOfParcels) {
+    resultText.setText("Loading!");
     controller.generateData(numberOfProperties, numberOfParcels);
+    resultText.setText("Done!");
   }
 
   @Override
@@ -281,18 +279,10 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
       return;
     }
 
-    if (((IQuadTreeParametersObservable) observable).getQuadTreeDataType() == DataType.PROPERTY) {
-      int propertyQuadTreeHeight = ((IQuadTreeParametersObservable) observable).getQuadTreeHeight();
-      Rectangle propertyQuadTreeRectangle =
-          ((IQuadTreeParametersObservable) observable).getQuadTreeArea();
-      initializePropertyQuadTree(propertyQuadTreeHeight, propertyQuadTreeRectangle);
-    }
+    int quadTreeHeight = ((IQuadTreeParametersObservable) observable).getQuadTreeHeight();
+    Rectangle quadTreeRectangle = ((IQuadTreeParametersObservable) observable).getQuadTreeArea();
 
-    if (((IQuadTreeParametersObservable) observable).getQuadTreeDataType() == DataType.PARCEL) {
-      int parcelQuadTreeHeight = ((IQuadTreeParametersObservable) observable).getQuadTreeHeight();
-      Rectangle parcelQuadTreeRectangle =
-          ((IQuadTreeParametersObservable) observable).getQuadTreeArea();
-      initializeParcelQuadTree(parcelQuadTreeHeight, parcelQuadTreeRectangle);
-    }
+    initializeParcelQuadTree(quadTreeHeight, quadTreeRectangle);
+    initializePropertyQuadTree(quadTreeHeight, quadTreeRectangle);
   }
 }
