@@ -1,5 +1,6 @@
 package quadtree;
 
+import entity.SpatialData;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
@@ -7,7 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-public class QuadNode<T extends IShapeData> {
+public class QuadNode<T extends SpatialData<?>> {
   public static final int MAX_CHILDREN = 4;
   private final QuadNode<T>[] children;
   private QuadNode<T> parent;

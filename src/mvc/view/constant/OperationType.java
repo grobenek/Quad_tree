@@ -1,7 +1,9 @@
 package mvc.view.constant;
 
 public enum OperationType {
-    SEARCH,
-    EDIT,
-    DELETE
+  SEARCH,
+  EDIT,
+  DELETE,
+  SAVE,
+  LOAD
 }
