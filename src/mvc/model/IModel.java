@@ -8,7 +8,7 @@ import java.util.List;
 import mvc.view.constant.DataType;
 import mvc.view.observable.IObservable;
 import quadtree.IShapeData;
-import util.IFileBuilder;
+import util.file.IFileBuilder;
 
 public interface IModel extends IObservable {
   List<Parcel> searchParcelsInGivenShape(Rectangle shapeToSearchIn);

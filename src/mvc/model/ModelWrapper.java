@@ -15,8 +15,8 @@ import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
-import util.IFileBuilder;
-import util.IOManager;
+import util.file.IFileBuilder;
+import util.file.IOManager;
 
 public class ModelWrapper implements IModel, IQuadTreeObservable {
   QuadTree<Property> propertyQuadTree;
@@ -208,6 +208,7 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
     }
 
     propertyQuadTree.deleteData(propertyToDelete);
+    sendNotifications();
   }
 
   @Override
@@ -218,6 +219,7 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
     }
 
     parcelQuadTree.deleteData(parcelToDelete);
+    sendNotifications();
   }
 
   @Override

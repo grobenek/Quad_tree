@@ -1,4 +1,4 @@
-package util;
+package util.file;
 
 import entity.SpatialData;
 import entity.shape.Direction;
@@ -52,6 +52,8 @@ public class CsvBuilder implements IFileBuilder {
     try (BufferedReader bufferedReader = new BufferedReader(new FileReader(pathToFile))) {
       bufferedReader.readLine(); // skip header line
       String className = bufferedReader.readLine();
+
+      // getting class to create reading class name from file
       Class<?> classToCreate = Class.forName(className);
 
       // reading lines
@@ -62,6 +64,7 @@ public class CsvBuilder implements IFileBuilder {
           break;
         }
 
+        // creating object using reflections
         String[] data = line.split(String.valueOf(deliminer));
         Rectangle shapeOfObject =
             new Rectangle(

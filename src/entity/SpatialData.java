@@ -80,7 +80,8 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
         + relatedDataList.size()
         + ", shape="
         + shape
-        + '}';
+        + '}'
+            + "\n";
   }
 
   @Override

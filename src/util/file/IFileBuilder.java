@@ -1,4 +1,4 @@
-package util;
+package util.file;
 
 import entity.SpatialData;
 import java.io.IOException;

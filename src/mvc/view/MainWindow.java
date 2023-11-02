@@ -16,8 +16,8 @@ import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeParametersObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
-import util.CsvBuilder;
-import util.IFileBuilder;
+import util.file.CsvBuilder;
+import util.file.IFileBuilder;
 
 public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
@@ -145,6 +145,7 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   public void saveDataFromFile(String pathToFile, DataType dataType, IFileBuilder fileBuilder) {
     try {
       controller.saveDataFromFile(pathToFile, dataType, fileBuilder);
+      resultText.setText("Done!");
     } catch (Exception exception) {
       showPopupMessage(exception.getLocalizedMessage());
     }
@@ -154,6 +155,7 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   public void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) {
     try {
       controller.loadDataFromFile(pathToFile, fileBuilder);
+      resultText.setText("Done!");
     } catch (Exception exception) {
       showPopupMessage(exception.getLocalizedMessage());
     }

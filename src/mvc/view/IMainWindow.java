@@ -7,7 +7,7 @@ import java.io.IOException;
 import javax.swing.*;
 import mvc.view.constant.DataType;
 import quadtree.QuadTree;
-import util.IFileBuilder;
+import util.file.IFileBuilder;
 
 public interface IMainWindow {
   void setParcelTreeInfo(QuadTree<Parcel> parcelQuadTree);

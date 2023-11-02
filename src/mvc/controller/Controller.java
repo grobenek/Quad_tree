@@ -13,7 +13,7 @@ import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
-import util.IFileBuilder;
+import util.file.IFileBuilder;
 
 public class Controller implements IController, IObserver {
   IModel model;
