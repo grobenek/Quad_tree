@@ -16,6 +16,7 @@ public class QuadTree<T extends SpatialData<?>> {
   private int itemsInSouthWest;
   private int itemsInSouthEast;
   private int itemsInRoot;
+  private List<Quadrant> last2WorstQuadrants;
 
   public QuadTree(int maxHeight, Rectangle shape) {
     this.height = maxHeight;
@@ -27,6 +28,7 @@ public class QuadTree<T extends SpatialData<?>> {
     this.itemsInSouthEast = 0;
     this.itemsInSouthWest = 0;
     this.itemsInRoot = 0;
+    this.last2WorstQuadrants = new ArrayList<>(2);
   }
 
   public Rectangle getShape() {
@@ -49,27 +51,18 @@ public class QuadTree<T extends SpatialData<?>> {
               "Data: %s does not fit into QuadTree with shape: %s", data, root.getShape()));
     }
 
-    if (root == null) {
-      root = new QuadNode<>(data, shape);
-      this.shape = shape;
-      return;
-    }
-
     // finding right place for data
     findFreeParentForDataAndAddDataToNewChild(root, data, true);
+    optimize();
   }
-
-  private boolean isPoint(T data) {
-    return (data.getShapeOfData().getWidth() == data.getShapeOfData().getLength());
-  }
-
-  private void insertPolygon(T data) {}
 
   /**
-   * Finds suitable place for data and returns node where data was inserted
+   * Finds suitable place for data and returns node where data was inserted and insert them if
+   * needed
    *
    * @param startingPoint Node from which we look for suitable place
    * @param data data to be added
+   * @param insertNewData flag if data should be inserted or we just need to find place for it
    */
   private QuadNode<T> findFreeParentForDataAndAddDataToNewChild(
       QuadNode<T> startingPoint, T data, boolean insertNewData) {
@@ -165,6 +158,12 @@ public class QuadTree<T extends SpatialData<?>> {
 
       QuadNode<T> parentOfPlace = originalParent;
       int heightCounter = parentOfPlace.getHeight();
+
+      if (heightCounter == height) {
+        parentOfPlace.addItem(itemToWorkWith);
+        continue;
+      }
+
       Quadrant quadrantOfItem = parentOfPlace.getQuadrantOfShape(itemToWorkWith, false);
 
       // item cannot be inserted deeper, adding to parent
@@ -184,6 +183,11 @@ public class QuadTree<T extends SpatialData<?>> {
 
       // finding possible place for item
       while (true) {
+        if (heightCounter == height) {
+          parentOfPlace.addItem(itemToWorkWith);
+          break;
+        }
+
         parentOfPlace = possiblePlaceForItem;
         quadrantOfItem = parentOfPlace.getQuadrantOfShape(itemToWorkWith, false);
 
@@ -294,6 +298,7 @@ public class QuadTree<T extends SpatialData<?>> {
         case NORTH_WEST -> itemsInNorthWest--;
       }
     }
+    optimize();
 
     // is leaf, but it is not empty
     if (nodeOfChild.isLeaf() && nodeOfChild.getItemsSize() != 0) {
@@ -472,11 +477,9 @@ public class QuadTree<T extends SpatialData<?>> {
   }
 
   public void optimize() {
-    double healthOfTree = getHealthOfQuadTree();
-
-    //    if (healthOfTree > ) {
-    //
-    //    }
+    if (size <= 4) {
+      return;
+    }
 
     double[] healthOfEachQudrant = new double[5];
 
@@ -500,18 +503,30 @@ public class QuadTree<T extends SpatialData<?>> {
     }
 
     // everything is equal
-    if (maxIndex == -1) {
+    if (maxIndex == -1 || maxIndex == 4) {
       return;
     }
 
     Quadrant worstQuadrant;
-    if (maxIndex == 4) {
-      worstQuadrant = null;
-    } else {
-      worstQuadrant = Quadrant.values()[maxIndex];
+
+    worstQuadrant = Quadrant.values()[maxIndex];
+
+    if (last2WorstQuadrants.contains(worstQuadrant)) {
+      return;
     }
 
+    addWorstQuadrantToWorstQuadrantHistory(worstQuadrant);
+
     generateNewQuadTreeBasedOnWorstQuadrant(worstQuadrant);
+  }
+
+  private void addWorstQuadrantToWorstQuadrantHistory(Quadrant worstQuadrant) {
+    if (last2WorstQuadrants.size() == 2) {
+      last2WorstQuadrants.remove(0);
+      last2WorstQuadrants.add(worstQuadrant);
+    } else {
+      last2WorstQuadrants.add(worstQuadrant);
+    }
   }
 
   private void generateNewQuadTreeBasedOnWorstQuadrant(Quadrant worstQuadrant) {
@@ -523,52 +538,37 @@ public class QuadTree<T extends SpatialData<?>> {
     GpsCoordinates firstPointOfNewShape;
     GpsCoordinates seconPointOfNewShape;
 
-    if (worstQuadrant == null) {
-      shapeOfWorstQuadrant = shape;
+    shapeOfWorstQuadrant = root.getChild(worstQuadrant).getShape();
 
-      firstPointOfNewShape = shapeOfWorstQuadrant.getFirstPoint();
+    xCenterOfWorstQuadrant =
+        (shapeOfWorstQuadrant.getFirstPoint().widthCoordinate()
+                + shapeOfWorstQuadrant.getSecondPoint().widthCoordinate())
+            / 2;
+    yCenterOfWorstQuadrant =
+        (shapeOfWorstQuadrant.getFirstPoint().lengthCoordinate()
+                + shapeOfWorstQuadrant.getSecondPoint().lengthCoordinate())
+            / 2;
 
-      seconPointOfNewShape =
-          new GpsCoordinates(
-              Direction.N,
-              (shapeOfWorstQuadrant.getSecondPoint().widthCoordinate()
-                  + (shapeOfWorstQuadrant.getWidth())),
-              Direction.E,
-              (shapeOfWorstQuadrant.getSecondPoint().lengthCoordinate()
-                  + (shapeOfWorstQuadrant.getLength())));
-    } else {
-      shapeOfWorstQuadrant = root.getChild(worstQuadrant).getShape();
+    centerOfWorstQuadrant =
+        new Rectangle(
+            new GpsCoordinates(
+                Direction.S, xCenterOfWorstQuadrant, Direction.W, yCenterOfWorstQuadrant),
+            new GpsCoordinates(
+                Direction.S, xCenterOfWorstQuadrant, Direction.W, yCenterOfWorstQuadrant));
 
-      xCenterOfWorstQuadrant =
-          (shapeOfWorstQuadrant.getFirstPoint().widthCoordinate()
-                  + shapeOfWorstQuadrant.getSecondPoint().widthCoordinate())
-              / 2;
-      yCenterOfWorstQuadrant =
-          (shapeOfWorstQuadrant.getFirstPoint().lengthCoordinate()
-                  + shapeOfWorstQuadrant.getSecondPoint().lengthCoordinate())
-              / 2;
+    firstPointOfNewShape =
+        new GpsCoordinates(
+            Direction.S,
+            (centerOfWorstQuadrant.getFirstPoint().widthCoordinate() - (shape.getWidth())),
+            Direction.W,
+            (centerOfWorstQuadrant.getFirstPoint().lengthCoordinate() - (shape.getLength())));
 
-      centerOfWorstQuadrant =
-          new Rectangle(
-              new GpsCoordinates(
-                  Direction.S, xCenterOfWorstQuadrant, Direction.W, yCenterOfWorstQuadrant),
-              new GpsCoordinates(
-                  Direction.S, xCenterOfWorstQuadrant, Direction.W, yCenterOfWorstQuadrant));
-
-      firstPointOfNewShape =
-          new GpsCoordinates(
-              Direction.S,
-              (centerOfWorstQuadrant.getFirstPoint().widthCoordinate() - (shape.getWidth())),
-              Direction.W,
-              (centerOfWorstQuadrant.getFirstPoint().lengthCoordinate() - (shape.getLength())));
-
-      seconPointOfNewShape =
-          new GpsCoordinates(
-              Direction.N,
-              (centerOfWorstQuadrant.getSecondPoint().widthCoordinate()) + (shape.getWidth()),
-              Direction.E,
-              (centerOfWorstQuadrant.getSecondPoint().lengthCoordinate() + (shape.getLength())));
-    }
+    seconPointOfNewShape =
+        new GpsCoordinates(
+            Direction.N,
+            (centerOfWorstQuadrant.getSecondPoint().widthCoordinate()) + (shape.getWidth()),
+            Direction.E,
+            (centerOfWorstQuadrant.getSecondPoint().lengthCoordinate() + (shape.getLength())));
 
     Rectangle newShapeOfTree = new Rectangle(firstPointOfNewShape, seconPointOfNewShape);
 
