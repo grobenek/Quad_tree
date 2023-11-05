@@ -20,6 +20,11 @@ public class CsvBuilder implements IFileBuilder {
   @Override
   public void saveToFile(String pathToFile, List<? extends SpatialData<?>> itemsToSave)
       throws IOException {
+
+    if (itemsToSave.isEmpty()) {
+      return;
+    }
+
     StringBuilder sb = new StringBuilder();
 
     sb.append("Object name;Description;X1;Y1;X2;Y2\n");

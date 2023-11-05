@@ -45,6 +45,7 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   public void generateData(int numberOfProperties, int numberOfParcels) {
     generateData(numberOfProperties, DataType.PROPERTY);
     generateData(numberOfParcels, DataType.PARCEL);
+    sendNotifications();
   }
 
   @Override
@@ -80,7 +81,8 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
         addProperty(
             loadedProperty.getIdentificationNumber(),
             loadedProperty.getDescription(),
-            loadedProperty.getShapeOfData());
+            loadedProperty.getShapeOfData(),
+            true);
       }
     } else if (loadedItems.get(0) instanceof Parcel) {
       parcelQuadTree = new QuadTree<>(parcelQuadTree.getHeight(), parcelQuadTree.getShape());
@@ -89,7 +91,8 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
         addParcel(
             loadedParcel.getIdentificationNumber(),
             loadedParcel.getDescription(),
-            loadedParcel.getShapeOfData());
+            loadedParcel.getShapeOfData(),
+            true);
       }
     } else {
       throw new IllegalStateException(
@@ -97,6 +100,13 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
               "Unsupported object %s found when loading file %s",
               loadedItems.get(0).getClass().getName(), pathToFile));
     }
+  }
+
+  @Override
+  public void optimizeTrees() {
+    propertyQuadTree.optimize();
+    parcelQuadTree.optimize();
+    sendNotifications();
   }
 
   private void generateData(int numberOfItemsToInsert, DataType dataTypeToInsert) {
@@ -133,9 +143,9 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
 
       switch (dataTypeToInsert) {
         case PROPERTY -> addProperty(
-            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem));
+            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem), false);
         case PARCEL -> addParcel(
-            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem));
+            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem), false);
         default -> throw new IllegalArgumentException(
             "Invalid data type: " + dataTypeToInsert.name());
       }
@@ -169,7 +179,8 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   }
 
   @Override
-  public void addProperty(int registerNumber, String description, Rectangle shape) {
+  public void addProperty(
+      int registerNumber, String description, Rectangle shape, boolean shouldNotifyAboutChanges) {
     Property property = new Property(registerNumber, description, shape);
 
     propertyQuadTree.insert(property);
@@ -181,11 +192,16 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
       parcel.addRelatedData(property);
     }
 
+    if (!shouldNotifyAboutChanges) {
+      return;
+    }
+
     sendNotifications();
   }
 
   @Override
-  public void addParcel(int parcelNumber, String description, Rectangle shape) {
+  public void addParcel(
+      int parcelNumber, String description, Rectangle shape, boolean shouldNotifyAboutChanges) {
     Parcel parcel = new Parcel(parcelNumber, description, shape);
 
     parcelQuadTree.insert(parcel);
@@ -195,6 +211,10 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
     for (Property property : properties) {
       parcel.addRelatedData(property);
       property.addRelatedData(parcel);
+    }
+
+    if (!shouldNotifyAboutChanges) {
+      return;
     }
 
     sendNotifications();

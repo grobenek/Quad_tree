@@ -35,4 +35,6 @@ public interface IController extends IObserver {
       throws IOException;
 
   void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) throws IOException;
+
+    void optimizeTrees();
 }

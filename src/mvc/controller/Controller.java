@@ -57,7 +57,7 @@ public class Controller implements IController, IObserver {
   @Override
   public void addProperty(int registerNumber, String description, Rectangle shape) {
     try {
-      model.addProperty(registerNumber, description, shape);
+      model.addProperty(registerNumber, description, shape, true);
     } catch (Exception exception) {
       view.showPopupMessage(exception.getLocalizedMessage());
     }
@@ -66,7 +66,7 @@ public class Controller implements IController, IObserver {
   @Override
   public void addParcel(int parcelNumber, String description, Rectangle shape) {
     try {
-      model.addParcel(parcelNumber, description, shape);
+      model.addParcel(parcelNumber, description, shape, true);
     } catch (Exception exception) {
       view.showPopupMessage(exception.getLocalizedMessage());
     }
@@ -114,6 +114,11 @@ public class Controller implements IController, IObserver {
   @Override
   public void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) throws IOException {
     model.loadDataFromFile(pathToFile, fileBuilder);
+  }
+
+  @Override
+  public void optimizeTrees() {
+    model.optimizeTrees();
   }
 
   @Override

@@ -17,9 +17,9 @@ public interface IModel extends IObservable {
 
   List<? extends IShapeData>[] searchAllObjectsInGivenShape(Rectangle shapeToSearchIn);
 
-  void addProperty(int registerNumber, String description, Rectangle shape);
+  void addProperty(int registerNumber, String description, Rectangle shape, boolean shouldNotifyAboutChanges);
 
-  void addParcel(int parcelNumber, String description, Rectangle shape);
+  void addParcel(int parcelNumber, String description, Rectangle shape, boolean shouldNotifyAboutChanges);
 
   void deleteProperty(Property propertyToDelete);
 
@@ -35,4 +35,6 @@ public interface IModel extends IObservable {
       throws IOException;
 
   void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) throws IOException;
+
+  void optimizeTrees();
 }

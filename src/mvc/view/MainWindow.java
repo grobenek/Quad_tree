@@ -39,6 +39,7 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   private JButton deleteParcelButton;
   private JButton saveButton;
   private JButton loadButton;
+  private JButton optimizeButton;
 
   public MainWindow(IController controller) throws HeadlessException {
     this.controller = controller;
@@ -125,6 +126,11 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
           loadDataFromFile("parcels.csv", new CsvBuilder());
           loadDataFromFile("properties.csv", new CsvBuilder());
         });
+
+    optimizeButton.addActionListener(
+        e -> {
+          controller.optimizeTrees();
+        });
   }
 
   @Override
@@ -136,7 +142,7 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
   @Override
   public void generateData(int numberOfProperties, int numberOfParcels) {
-    resultText.setText("Loading!");
+    System.out.println("Generating!");
     controller.generateData(numberOfProperties, numberOfParcels);
     resultText.setText("Done!");
   }

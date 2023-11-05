@@ -4,8 +4,8 @@ import entity.SpatialData;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 public class QuadNode<T extends SpatialData<?>> {
@@ -20,7 +20,7 @@ public class QuadNode<T extends SpatialData<?>> {
   public QuadNode(Rectangle shape) {
     this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
     this.shape = shape;
-    this.items = new LinkedList<>();
+    this.items = new ArrayList<>();
     this.parent = null;
     childrenSize = 0;
   }
@@ -28,7 +28,7 @@ public class QuadNode<T extends SpatialData<?>> {
   public QuadNode(T data, Rectangle shape) {
     this.children = (QuadNode<T>[]) new QuadNode[MAX_CHILDREN]; // TODO warning
     this.shape = shape;
-    this.items = new LinkedList<>();
+    this.items = new ArrayList<>();
     this.parent = null;
     childrenSize = 0;
     items.add(data);
