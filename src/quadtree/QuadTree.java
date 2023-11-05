@@ -62,7 +62,7 @@ public class QuadTree<T extends SpatialData<?>> {
    *
    * @param startingPoint Node from which we look for suitable place
    * @param data data to be added
-   * @param insertNewData flag if data should be inserted or we just need to find place for it
+   * @param insertNewData flag if data should be inserted, or we just need to find place for it
    */
   private QuadNode<T> findFreeParentForDataAndAddDataToNewChild(
       QuadNode<T> startingPoint, T data, boolean insertNewData) {
@@ -266,6 +266,11 @@ public class QuadTree<T extends SpatialData<?>> {
   }
 
   public void deleteData(T data) {
+    delete(data);
+    optimize();
+  }
+
+  private void delete(T data) {
     if (data == null) {
       throw new IllegalArgumentException("Cannot delete data: null!");
     }
@@ -298,7 +303,6 @@ public class QuadTree<T extends SpatialData<?>> {
         case NORTH_WEST -> itemsInNorthWest--;
       }
     }
-    optimize();
 
     // is leaf, but it is not empty
     if (nodeOfChild.isLeaf() && nodeOfChild.getItemsSize() != 0) {

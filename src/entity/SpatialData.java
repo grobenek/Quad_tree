@@ -2,7 +2,6 @@ package entity;
 
 import entity.shape.Rectangle;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import quadtree.IShapeData;
 
@@ -17,7 +16,7 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
     this.description = description;
     this.shape = shape;
 
-    this.relatedDataList = new LinkedList<>();
+    this.relatedDataList = new ArrayList<>();
   }
 
   public SpatialData(int identificationNumber, String description) {
@@ -81,7 +80,7 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
         + ", shape="
         + shape
         + '}'
-            + "\n";
+        + "\n";
   }
 
   @Override

@@ -65,8 +65,7 @@ public class InitializeQuadTree extends JDialog implements IQuadTreeParametersOb
   }
 
   private void onCancel() {
-    // add your code here if necessary
-    dispose();
+    // do nothing
   }
 
   @Override
