@@ -2,6 +2,7 @@ package mvc.view;
 
 import entity.Parcel;
 import entity.Property;
+import entity.SpatialData;
 import entity.shape.Direction;
 import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
@@ -36,13 +37,13 @@ public class NewDataDialog extends JDialog {
       JFrame mainWindow,
       IController controller,
       DataType dataType,
-      Object dataToFillIntoTextFields) {
+      SpatialData<?> dataToFillIntoTextFields) {
     this.dataType = dataType;
     this.controller = controller;
 
     if (dataToFillIntoTextFields instanceof Parcel parcelToAddData) {
       identificationNumberNumberTextField.setText(
-          String.valueOf(parcelToAddData.getParcelNumber()));
+          String.valueOf(parcelToAddData.getIdentificationNumber()));
       descriptionTextField.setText(parcelToAddData.getDescription());
 
       Rectangle shapeOfParcel = parcelToAddData.getShapeOfData();
@@ -54,7 +55,7 @@ public class NewDataDialog extends JDialog {
 
     if (dataToFillIntoTextFields instanceof Property propertyToAdd) {
       identificationNumberNumberTextField.setText(
-          String.valueOf(propertyToAdd.getRegisterNumber()));
+          String.valueOf(propertyToAdd.getIdentificationNumber()));
       descriptionTextField.setText(propertyToAdd.getDescription());
 
       Rectangle shapeOfParcel = propertyToAdd.getShapeOfData();
@@ -151,7 +152,7 @@ public class NewDataDialog extends JDialog {
     if (filledData instanceof Parcel filledParcel) {
 
       if ((Integer.parseInt(identificationNumberNumberTextField.getText()))
-          != filledParcel.getParcelNumber()) {
+          != filledParcel.getIdentificationNumber()) {
         hasIdentificationNumberChanged = true;
       }
 
@@ -170,7 +171,7 @@ public class NewDataDialog extends JDialog {
         }
 
         if (hasIdentificationNumberChanged) {
-          filledParcel.setParcelNumber(
+          filledParcel.setIdentificationNumber(
               Integer.parseInt(identificationNumberNumberTextField.getText()));
         }
       }
@@ -187,7 +188,7 @@ public class NewDataDialog extends JDialog {
 
     if (filledData instanceof Property filledProperty) {
       if ((Integer.parseInt(identificationNumberNumberTextField.getText()))
-          != filledProperty.getRegisterNumber()) {
+          != filledProperty.getIdentificationNumber()) {
         hasIdentificationNumberChanged = true;
       }
 
@@ -206,7 +207,7 @@ public class NewDataDialog extends JDialog {
         }
 
         if (hasIdentificationNumberChanged) {
-          filledProperty.setRegisterNumber(
+          filledProperty.setIdentificationNumber(
               Integer.parseInt(identificationNumberNumberTextField.getText()));
         }
       }

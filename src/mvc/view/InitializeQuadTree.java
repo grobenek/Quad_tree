@@ -7,13 +7,11 @@ import java.awt.event.*;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.*;
-import mvc.view.constant.DataType;
 import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeParametersObservable;
 
 public class InitializeQuadTree extends JDialog implements IQuadTreeParametersObservable {
   private final List<IObserver> observers;
-  private final DataType quadTreeDataType;
   private JPanel contentPane;
   private JButton buttonOK;
   private JButton buttonCancel;
@@ -29,13 +27,12 @@ public class InitializeQuadTree extends JDialog implements IQuadTreeParametersOb
   private JLabel y2Label;
   private JLabel x2Label;
 
-  public InitializeQuadTree(IMainWindow mainWindow, DataType quadTreeDataType) {
+  public InitializeQuadTree(IMainWindow mainWindow) {
     setContentPane(contentPane);
     setModal(true);
     getRootPane().setDefaultButton(buttonOK);
 
     observers = new LinkedList<>();
-    this.quadTreeDataType = quadTreeDataType;
 
     buttonOK.addActionListener(e -> onOK());
 
@@ -58,7 +55,7 @@ public class InitializeQuadTree extends JDialog implements IQuadTreeParametersOb
 
     setSize(500, 400);
     setAutoRequestFocus(true);
-    setTitle(String.format("Initialize %s quad tree", quadTreeDataType.name()));
+    setTitle("Initialize quad trees");
     setLocationRelativeTo(mainWindow.getJFrameObject());
   }
 
@@ -110,10 +107,5 @@ public class InitializeQuadTree extends JDialog implements IQuadTreeParametersOb
             Float.parseFloat(y2TextField.getText()));
 
     return new Rectangle(bottomLeftPoint, topRightPoint);
-  }
-
-  @Override
-  public DataType getQuadTreeDataType() {
-    return quadTreeDataType;
   }
 }

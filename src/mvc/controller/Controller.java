@@ -3,14 +3,17 @@ package mvc.controller;
 import entity.Parcel;
 import entity.Property;
 import entity.shape.Rectangle;
+import java.io.IOException;
 import java.util.List;
 import mvc.model.IModel;
 import mvc.view.*;
+import mvc.view.constant.DataType;
 import mvc.view.observable.IObservable;
 import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
+import util.file.IFileBuilder;
 
 public class Controller implements IController, IObserver {
   IModel model;
@@ -54,7 +57,7 @@ public class Controller implements IController, IObserver {
   @Override
   public void addProperty(int registerNumber, String description, Rectangle shape) {
     try {
-      model.addProperty(registerNumber, description, shape);
+      model.addProperty(registerNumber, description, shape, true);
     } catch (Exception exception) {
       view.showPopupMessage(exception.getLocalizedMessage());
     }
@@ -63,7 +66,7 @@ public class Controller implements IController, IObserver {
   @Override
   public void addParcel(int parcelNumber, String description, Rectangle shape) {
     try {
-      model.addParcel(parcelNumber, description, shape);
+      model.addParcel(parcelNumber, description, shape, true);
     } catch (Exception exception) {
       view.showPopupMessage(exception.getLocalizedMessage());
     }
@@ -95,6 +98,27 @@ public class Controller implements IController, IObserver {
     } catch (Exception exception) {
       view.showPopupMessage(exception.getLocalizedMessage());
     }
+  }
+
+  @Override
+  public void generateData(int numberOfProperties, int numberOfParcels) {
+    model.generateData(numberOfProperties, numberOfParcels);
+  }
+
+  @Override
+  public void saveDataFromFile(String pathToFile, DataType dataType, IFileBuilder fileBuilder)
+      throws IOException {
+    model.saveDataFromFile(pathToFile, dataType, fileBuilder);
+  }
+
+  @Override
+  public void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) throws IOException {
+    model.loadDataFromFile(pathToFile, fileBuilder);
+  }
+
+  @Override
+  public void optimizeTrees() {
+    model.optimizeTrees();
   }
 
   @Override

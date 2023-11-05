@@ -2,22 +2,31 @@ package mvc.model;
 
 import entity.Parcel;
 import entity.Property;
+import entity.SpatialData;
+import entity.shape.Direction;
+import entity.shape.GpsCoordinates;
 import entity.shape.Rectangle;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import mvc.view.constant.DataType;
 import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
+import util.file.IFileBuilder;
+import util.file.IOManager;
 
 public class ModelWrapper implements IModel, IQuadTreeObservable {
   QuadTree<Property> propertyQuadTree;
   QuadTree<Parcel> parcelQuadTree;
-
   List<IObserver> observers;
+  Random randomGenerator;
 
   public ModelWrapper() {
     this.observers = new LinkedList<>();
+    this.randomGenerator = new Random();
   }
 
   @Override
@@ -30,6 +39,117 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   public void initializeParcelQuadTree(int height, Rectangle shape) {
     parcelQuadTree = new QuadTree<>(height, shape);
     sendNotifications();
+  }
+
+  @Override
+  public void generateData(int numberOfProperties, int numberOfParcels) {
+    generateData(numberOfProperties, DataType.PROPERTY);
+    generateData(numberOfParcels, DataType.PARCEL);
+    sendNotifications();
+  }
+
+  @Override
+  public void saveDataFromFile(String pathToFile, DataType datatype, IFileBuilder fileBuilder)
+      throws IOException {
+    List<? extends SpatialData<?>> dataToSave;
+
+    switch (datatype) {
+      case PARCEL -> dataToSave = parcelQuadTree.search(parcelQuadTree.getShape());
+      case PROPERTY -> dataToSave = propertyQuadTree.search(propertyQuadTree.getShape());
+      default -> throw new IllegalArgumentException(
+          String.format("Unsupported datatype %s", datatype.name()));
+    }
+
+    new IOManager(fileBuilder).saveToFile(pathToFile, dataToSave);
+  }
+
+  @Override
+  public void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) throws IOException {
+    IOManager ioManager = new IOManager(fileBuilder);
+    ioManager.loadFromFile(pathToFile);
+
+    List<SpatialData<?>> loadedItems = fileBuilder.getLoadedData();
+
+    if (loadedItems.isEmpty()) {
+      return;
+    }
+
+    if (loadedItems.get(0) instanceof Property) {
+      propertyQuadTree = new QuadTree<>(propertyQuadTree.getHeight(), propertyQuadTree.getShape());
+      for (SpatialData<?> loadedItem : loadedItems) {
+        Property loadedProperty = (Property) loadedItem;
+        addProperty(
+            loadedProperty.getIdentificationNumber(),
+            loadedProperty.getDescription(),
+            loadedProperty.getShapeOfData(),
+            true);
+      }
+    } else if (loadedItems.get(0) instanceof Parcel) {
+      parcelQuadTree = new QuadTree<>(parcelQuadTree.getHeight(), parcelQuadTree.getShape());
+      for (SpatialData<?> loadedItem : loadedItems) {
+        Parcel loadedParcel = (Parcel) loadedItem;
+        addParcel(
+            loadedParcel.getIdentificationNumber(),
+            loadedParcel.getDescription(),
+            loadedParcel.getShapeOfData(),
+            true);
+      }
+    } else {
+      throw new IllegalStateException(
+          String.format(
+              "Unsupported object %s found when loading file %s",
+              loadedItems.get(0).getClass().getName(), pathToFile));
+    }
+  }
+
+  @Override
+  public void optimizeTrees() {
+    propertyQuadTree.optimize();
+    parcelQuadTree.optimize();
+    sendNotifications();
+  }
+
+  private void generateData(int numberOfItemsToInsert, DataType dataTypeToInsert) {
+    for (int i = 0; i < numberOfItemsToInsert; i++) {
+      Rectangle quadTreeShape;
+
+      switch (dataTypeToInsert) {
+        case PROPERTY -> quadTreeShape = propertyQuadTree.getShape();
+        case PARCEL -> quadTreeShape = parcelQuadTree.getShape();
+        default -> throw new IllegalArgumentException(
+            "Invalid data type: " + dataTypeToInsert.name());
+      }
+
+      GpsCoordinates firstPointOfItem =
+          new GpsCoordinates(
+              Direction.S,
+              (randomGenerator.nextDouble(
+                  quadTreeShape.getFirstPoint().widthCoordinate(),
+                  quadTreeShape.getSecondPoint().widthCoordinate())),
+              Direction.W,
+              (randomGenerator.nextDouble(
+                  quadTreeShape.getFirstPoint().lengthCoordinate(),
+                  quadTreeShape.getSecondPoint().lengthCoordinate())));
+      GpsCoordinates secondPointOfItem =
+          new GpsCoordinates(
+              Direction.S,
+              (randomGenerator.nextDouble(
+                  quadTreeShape.getFirstPoint().widthCoordinate(),
+                  quadTreeShape.getSecondPoint().widthCoordinate())),
+              Direction.W,
+              (randomGenerator.nextDouble(
+                  quadTreeShape.getFirstPoint().lengthCoordinate(),
+                  quadTreeShape.getSecondPoint().lengthCoordinate())));
+
+      switch (dataTypeToInsert) {
+        case PROPERTY -> addProperty(
+            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem), false);
+        case PARCEL -> addParcel(
+            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem), false);
+        default -> throw new IllegalArgumentException(
+            "Invalid data type: " + dataTypeToInsert.name());
+      }
+    }
   }
 
   @Override
@@ -59,33 +179,42 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   }
 
   @Override
-  public void addProperty(int registerNumber, String description, Rectangle shape) {
+  public void addProperty(
+      int registerNumber, String description, Rectangle shape, boolean shouldNotifyAboutChanges) {
     Property property = new Property(registerNumber, description, shape);
 
     propertyQuadTree.insert(property);
 
-    property.setParcels(parcelQuadTree.search(shape));
-
     List<Parcel> parcels = parcelQuadTree.search(shape);
 
     for (Parcel parcel : parcels) {
-      parcel.addProperty(property);
+      property.addRelatedData(parcel);
+      parcel.addRelatedData(property);
+    }
+
+    if (!shouldNotifyAboutChanges) {
+      return;
     }
 
     sendNotifications();
   }
 
   @Override
-  public void addParcel(int parcelNumber, String description, Rectangle shape) {
+  public void addParcel(
+      int parcelNumber, String description, Rectangle shape, boolean shouldNotifyAboutChanges) {
     Parcel parcel = new Parcel(parcelNumber, description, shape);
 
     parcelQuadTree.insert(parcel);
 
-    parcel.setProperties(propertyQuadTree.search(shape));
-
     List<Property> properties = propertyQuadTree.search(shape);
+
     for (Property property : properties) {
-      property.addParcel(parcel);
+      parcel.addRelatedData(property);
+      property.addRelatedData(parcel);
+    }
+
+    if (!shouldNotifyAboutChanges) {
+      return;
     }
 
     sendNotifications();
@@ -95,24 +224,23 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
   public void deleteProperty(Property propertyToDelete) {
     List<Parcel> parcels = parcelQuadTree.search(propertyToDelete.getShapeOfData());
     for (Parcel parcel : parcels) {
-      parcel.removeProperty(propertyToDelete);
+      parcel.removeRelatedData(propertyToDelete);
     }
 
     propertyQuadTree.deleteData(propertyToDelete);
+    sendNotifications();
   }
 
   @Override
   public void deleteParcel(Parcel parcelToDelete) {
     List<Property> properties = propertyQuadTree.search(parcelToDelete.getShapeOfData());
     for (Property property : properties) {
-      property.removeParcel(parcelToDelete);
+      property.removeRelatedData(parcelToDelete);
     }
 
     parcelQuadTree.deleteData(parcelToDelete);
+    sendNotifications();
   }
-
-  @Override
-  public void generateDataForBothTrees() {}
 
   @Override
   public void attach(IObserver observer) {

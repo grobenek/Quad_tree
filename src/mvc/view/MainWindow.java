@@ -16,6 +16,8 @@ import mvc.view.observable.IObserver;
 import mvc.view.observable.IQuadTreeParametersObservable;
 import quadtree.IShapeData;
 import quadtree.QuadTree;
+import util.file.CsvBuilder;
+import util.file.IFileBuilder;
 
 public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
@@ -35,6 +37,9 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   private JButton editParcelButton;
   private JButton deletePropertyButton;
   private JButton deleteParcelButton;
+  private JButton saveButton;
+  private JButton loadButton;
+  private JButton optimizeButton;
 
   public MainWindow(IController controller) throws HeadlessException {
     this.controller = controller;
@@ -104,17 +109,62 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
           GetShapeDialog getShapeDialog =
               new GetShapeDialog(this, SearchCriteria.PARCELS, OperationType.DELETE);
         });
+
+    generateDataButton.addActionListener(
+        e -> {
+          GenerateDataDialog generateDataDialog = new GenerateDataDialog(this);
+        });
+
+    saveButton.addActionListener(
+        e -> {
+          saveDataFromFile("parcels.csv", DataType.PARCEL, new CsvBuilder());
+          saveDataFromFile("properties.csv", DataType.PROPERTY, new CsvBuilder());
+        });
+
+    loadButton.addActionListener(
+        e -> {
+          loadDataFromFile("parcels.csv", new CsvBuilder());
+          loadDataFromFile("properties.csv", new CsvBuilder());
+        });
+
+    optimizeButton.addActionListener(
+        e -> {
+          controller.optimizeTrees();
+        });
   }
 
   @Override
   public void initializeBothQuadTrees() {
-    InitializeQuadTree initializeParcelQuadTree = new InitializeQuadTree(this, DataType.PARCEL);
+    InitializeQuadTree initializeParcelQuadTree = new InitializeQuadTree(this);
     initializeParcelQuadTree.attach(this);
     initializeParcelQuadTree.setVisible(true);
+  }
 
-    InitializeQuadTree initializePropertyQuadTree = new InitializeQuadTree(this, DataType.PROPERTY);
-    initializePropertyQuadTree.attach(this);
-    initializePropertyQuadTree.setVisible(true);
+  @Override
+  public void generateData(int numberOfProperties, int numberOfParcels) {
+    System.out.println("Generating!");
+    controller.generateData(numberOfProperties, numberOfParcels);
+    resultText.setText("Done!");
+  }
+
+  @Override
+  public void saveDataFromFile(String pathToFile, DataType dataType, IFileBuilder fileBuilder) {
+    try {
+      controller.saveDataFromFile(pathToFile, dataType, fileBuilder);
+      resultText.setText("Done!");
+    } catch (Exception exception) {
+      showPopupMessage(exception.getLocalizedMessage());
+    }
+  }
+
+  @Override
+  public void loadDataFromFile(String pathToFile, IFileBuilder fileBuilder) {
+    try {
+      controller.loadDataFromFile(pathToFile, fileBuilder);
+      resultText.setText("Done!");
+    } catch (Exception exception) {
+      showPopupMessage(exception.getLocalizedMessage());
+    }
   }
 
   @Override
@@ -271,18 +321,10 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
       return;
     }
 
-    if (((IQuadTreeParametersObservable) observable).getQuadTreeDataType() == DataType.PROPERTY) {
-      int propertyQuadTreeHeight = ((IQuadTreeParametersObservable) observable).getQuadTreeHeight();
-      Rectangle propertyQuadTreeRectangle =
-          ((IQuadTreeParametersObservable) observable).getQuadTreeArea();
-      initializePropertyQuadTree(propertyQuadTreeHeight, propertyQuadTreeRectangle);
-    }
+    int quadTreeHeight = ((IQuadTreeParametersObservable) observable).getQuadTreeHeight();
+    Rectangle quadTreeRectangle = ((IQuadTreeParametersObservable) observable).getQuadTreeArea();
 
-    if (((IQuadTreeParametersObservable) observable).getQuadTreeDataType() == DataType.PARCEL) {
-      int parcelQuadTreeHeight = ((IQuadTreeParametersObservable) observable).getQuadTreeHeight();
-      Rectangle parcelQuadTreeRectangle =
-          ((IQuadTreeParametersObservable) observable).getQuadTreeArea();
-      initializeParcelQuadTree(parcelQuadTreeHeight, parcelQuadTreeRectangle);
-    }
+    initializeParcelQuadTree(quadTreeHeight, quadTreeRectangle);
+    initializePropertyQuadTree(quadTreeHeight, quadTreeRectangle);
   }
 }
