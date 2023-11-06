@@ -232,7 +232,10 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   public void editProperty(Rectangle area) {
     List<Property> result = controller.searchPropertiesInGivenShape(area);
 
-    JComboBox<Property> propertyComboBox = new JComboBox<>(result.toArray(new Property[0]));
+    JComboBox<Property> propertyComboBox = new JComboBox<>();
+    for (Property property : result) {
+      propertyComboBox.addItem(property);
+    }
 
     JPanel panel = new JPanel();
     panel.add(propertyComboBox);
@@ -251,7 +254,11 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   public void editParcel(Rectangle area) {
     List<Parcel> result = controller.searchParcelsInGivenShape(area);
 
-    JComboBox<Parcel> parcelJComboBox = new JComboBox<>(result.toArray(new Parcel[0]));
+    JComboBox<Parcel> parcelJComboBox = new JComboBox<>();
+
+    for (Parcel parcel : result) {
+      parcelJComboBox.addItem(parcel);
+    }
 
     JPanel panel = new JPanel();
     panel.add(parcelJComboBox);
@@ -259,6 +266,7 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
         JOptionPane.showConfirmDialog(this, panel, "Select Parcel", JOptionPane.OK_CANCEL_OPTION);
 
     if (chosenOption == JOptionPane.OK_OPTION) {
+      int selectedIndex = parcelJComboBox.getSelectedIndex();
       Parcel chosenParcel = (Parcel) parcelJComboBox.getSelectedItem();
 
       NewDataDialog newDataDialog =
@@ -270,7 +278,10 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   public void deleteProperty(Rectangle area) {
     List<Property> result = controller.searchPropertiesInGivenShape(area);
 
-    JComboBox<Property> propertyJComboBox = new JComboBox<>(result.toArray(new Property[0]));
+    JComboBox<Property> propertyJComboBox = new JComboBox<>();
+    for (Property property : result) {
+      propertyJComboBox.addItem(property);
+    }
 
     JPanel panel = new JPanel();
     panel.add(propertyJComboBox);
@@ -288,7 +299,10 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
   public void deleteParcel(Rectangle area) {
     List<Parcel> result = controller.searchParcelsInGivenShape(area);
 
-    JComboBox<Parcel> parcelJComboBox = new JComboBox<>(result.toArray(new Parcel[0]));
+    JComboBox<Parcel> parcelJComboBox = new JComboBox<>();
+    for (Parcel parcel : result) {
+      parcelJComboBox.addItem(parcel);
+    }
 
     JPanel panel = new JPanel();
     panel.add(parcelJComboBox);

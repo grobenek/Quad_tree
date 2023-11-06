@@ -83,7 +83,7 @@ public class Rectangle implements IShapeData {
         + width
         + ", length="
         + length
-        + '}';
+        + "}\n";
   }
 
   @Override

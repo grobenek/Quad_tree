@@ -3,12 +3,13 @@ package entity;
 import entity.shape.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import quadtree.IShapeData;
 
 public abstract class SpatialData<T extends IShapeData> implements IShapeData {
   private int identificationNumber;
   private String description;
-  private List<T> relatedDataList;
+  private List<SpatialData> relatedDataList;
   private Rectangle shape;
 
   public SpatialData(int identificationNumber, String description, Rectangle shape) {
@@ -42,19 +43,19 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
     this.description = description;
   }
 
-  public List<T> getRelatedDataList() {
+  public List<SpatialData> getRelatedDataList() {
     return relatedDataList;
   }
 
-  public void setRelatedDataList(List<T> relatedDataList) {
+  public void setRelatedDataList(List<SpatialData> relatedDataList) {
     this.relatedDataList = relatedDataList;
   }
 
-  public void addRelatedData(T data) {
+  public void addRelatedData(SpatialData data) {
     relatedDataList.add(data);
   }
 
-  public void removeRelatedData(T data) {
+  public void removeRelatedData(SpatialData data) {
     relatedDataList.remove(data);
   }
 
@@ -68,6 +69,15 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
   }
 
   public String toString(String className) {
+    StringBuilder sb = new StringBuilder();
+    relatedDataList.forEach(
+        data -> {
+          sb.append("Description: ")
+              .append(data.getDescription())
+              .append(" ")
+              .append(data.getShapeOfData());
+        });
+
     return className
         + "{"
         + "identificationNumber="
@@ -75,8 +85,8 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
         + ", description='"
         + description
         + '\''
-        + ", relatedDataList="
-        + relatedDataList.size()
+        + ", relatedDataList=\n"
+        + sb
         + ", shape="
         + shape
         + '}'
@@ -90,12 +100,17 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
     }
     SpatialData<?> castedObj = (SpatialData<?>) obj;
 
-    return (castedObj.getDescription().equals(description)
-            && ((castedObj.relatedDataList == null && relatedDataList == null)
-                || (castedObj.relatedDataList != null
-                    && castedObj.relatedDataList.equals(relatedDataList)))
-            && castedObj.identificationNumber == identificationNumber
-            && (castedObj.shape == null && shape == null)
-        || (castedObj.shape != null && castedObj.shape.equals(shape)));
+    return castedObj.getDescription().equals(description)
+        && castedObj.identificationNumber == identificationNumber
+        && ((castedObj.relatedDataList == null && relatedDataList == null)
+            || (castedObj.relatedDataList != null
+                && castedObj.relatedDataList.equals(relatedDataList)))
+        && ((castedObj.shape == null && shape == null)
+            || (castedObj.shape != null && castedObj.shape.equals(shape)));
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(identificationNumber, description, relatedDataList, shape);
   }
 }
