@@ -53,7 +53,6 @@ public class QuadTree<T extends SpatialData<?>> {
 
     // finding right place for data
     findFreeParentForDataAndAddDataToNewChild(root, data, true);
-    optimize();
   }
 
   /**
@@ -267,7 +266,6 @@ public class QuadTree<T extends SpatialData<?>> {
 
   public void deleteData(T data) {
     delete(data);
-    optimize();
   }
 
   private void delete(T data) {

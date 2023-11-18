@@ -120,32 +120,30 @@ public class ModelWrapper implements IModel, IQuadTreeObservable {
             "Invalid data type: " + dataTypeToInsert.name());
       }
 
-      GpsCoordinates firstPointOfItem =
-          new GpsCoordinates(
-              Direction.S,
-              (randomGenerator.nextDouble(
-                  quadTreeShape.getFirstPoint().widthCoordinate(),
-                  quadTreeShape.getSecondPoint().widthCoordinate())),
-              Direction.W,
-              (randomGenerator.nextDouble(
-                  quadTreeShape.getFirstPoint().lengthCoordinate(),
-                  quadTreeShape.getSecondPoint().lengthCoordinate())));
-      GpsCoordinates secondPointOfItem =
-          new GpsCoordinates(
-              Direction.S,
-              (randomGenerator.nextDouble(
-                  quadTreeShape.getFirstPoint().widthCoordinate(),
-                  quadTreeShape.getSecondPoint().widthCoordinate())),
-              Direction.W,
-              (randomGenerator.nextDouble(
-                  quadTreeShape.getFirstPoint().lengthCoordinate(),
-                  quadTreeShape.getSecondPoint().lengthCoordinate())));
+      double x1 =
+          (randomGenerator.nextDouble(
+              quadTreeShape.getFirstPoint().widthCoordinate(),
+              quadTreeShape.getSecondPoint().widthCoordinate()));
+      double y1 =
+          (randomGenerator.nextDouble(
+              quadTreeShape.getFirstPoint().lengthCoordinate(),
+              quadTreeShape.getSecondPoint().lengthCoordinate()));
+      double x2 =
+          (randomGenerator.nextDouble(
+              quadTreeShape.getFirstPoint().widthCoordinate(),
+              quadTreeShape.getSecondPoint().widthCoordinate()));
+      double y2 =
+          (randomGenerator.nextDouble(
+              quadTreeShape.getFirstPoint().lengthCoordinate(),
+              quadTreeShape.getSecondPoint().lengthCoordinate()));
 
+      GpsCoordinates firstPointOfItem = new GpsCoordinates(Direction.S, x1, Direction.W, y1);
+      GpsCoordinates secondPointOfItem = new GpsCoordinates(Direction.S, x2, Direction.W, y2);
       switch (dataTypeToInsert) {
         case PROPERTY -> addProperty(
-            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem), false);
+            i, "Popis " + i, new Rectangle(firstPointOfItem, secondPointOfItem), false);
         case PARCEL -> addParcel(
-            i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem), false);
+            i, "Popis " + i, new Rectangle(firstPointOfItem, secondPointOfItem), false);
         default -> throw new IllegalArgumentException(
             "Invalid data type: " + dataTypeToInsert.name());
       }

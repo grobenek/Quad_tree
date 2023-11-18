@@ -722,6 +722,130 @@ public class QuadTreeTest {
     System.out.println("With optimization: " + allAverageTimeWithOptimization);
   }
 
+  @Test
+  void testOptimizationOnSearch() {
+    Random random = new Random();
+    int height = 100;
+    GpsCoordinates firstPoint = new GpsCoordinates(Direction.S, 0, Direction.W, 0);
+    GpsCoordinates secondPoint = new GpsCoordinates(Direction.N, 100, Direction.E, 100);
+    Rectangle quadTreeRectangle = new Rectangle(firstPoint, secondPoint);
+
+    QuadTree<Property> quadTree;
+
+    int NUMBER_OF_ITEMS = 10500;
+
+    List<Long> allTimesWithoutOptimization = new ArrayList<>(NUMBER_OF_ITEMS);
+    List<Long> allTimesWithOptimization = new ArrayList<>(NUMBER_OF_ITEMS);
+    for (int j = 0; j < 50; j++) {
+      List<Property> insertedItems = new ArrayList<>(NUMBER_OF_ITEMS);
+      List<Property> insertedItemsBackup = new ArrayList<>(NUMBER_OF_ITEMS);
+      List<Long> timesWithoutOptimization = new ArrayList<>(NUMBER_OF_ITEMS);
+      List<Long> timesWithOptimization = new ArrayList<>(NUMBER_OF_ITEMS);
+      quadTree = new QuadTree<>(height, quadTreeRectangle);
+      for (int i = 0; i < NUMBER_OF_ITEMS; i++) {
+        GpsCoordinates firstPointOfItem =
+            new GpsCoordinates(
+                Direction.S,
+                (random.nextDouble(
+                    quadTreeRectangle.getFirstPoint().widthCoordinate(),
+                    quadTreeRectangle.getSecondPoint().widthCoordinate())),
+                Direction.W,
+                (random.nextDouble(
+                    quadTreeRectangle.getFirstPoint().lengthCoordinate(),
+                    quadTreeRectangle.getSecondPoint().lengthCoordinate())));
+        GpsCoordinates secondPointOfItem =
+            new GpsCoordinates(
+                Direction.S,
+                (random.nextDouble(
+                    quadTreeRectangle.getFirstPoint().widthCoordinate(),
+                    quadTreeRectangle.getSecondPoint().widthCoordinate())),
+                Direction.W,
+                (random.nextDouble(
+                    quadTreeRectangle.getFirstPoint().lengthCoordinate(),
+                    quadTreeRectangle.getSecondPoint().lengthCoordinate())));
+
+        Property itemToInsert =
+            new Property(i, String.valueOf(i), new Rectangle(firstPointOfItem, secondPointOfItem));
+        insertedItems.add(itemToInsert);
+        insertedItemsBackup.add(itemToInsert);
+
+        quadTree.insert(itemToInsert);
+      }
+
+      for (int i = 0; i < NUMBER_OF_ITEMS / 2; i++) {
+        int randomIndex = random.nextInt(insertedItems.size());
+
+        Property itemToSearch = insertedItems.get(randomIndex);
+
+        long startTime = System.nanoTime();
+        quadTree.search(itemToSearch.getShapeOfData());
+        long endTime = System.nanoTime();
+
+        timesWithoutOptimization.add(Math.abs(endTime - startTime));
+      }
+
+      quadTree = new QuadTree<>(height, quadTreeRectangle);
+      insertedItems.clear();
+
+      for (int i = 0; i < NUMBER_OF_ITEMS; i++) {
+
+        Property itemToInsert = insertedItemsBackup.get(i);
+
+        quadTree.insert(itemToInsert);
+        quadTree.optimize();
+      }
+
+      for (int i = 0; i < NUMBER_OF_ITEMS / 2; i++) {
+        int randomIndex = random.nextInt(insertedItemsBackup.size());
+
+        Property itemToSearch = insertedItemsBackup.get(randomIndex);
+
+        long startTime = System.nanoTime();
+        quadTree.search(itemToSearch.getShapeOfData());
+        long endTime = System.nanoTime();
+
+        timesWithOptimization.add(Math.abs(endTime - startTime));
+      }
+
+      long averageTimeWithoutOptimization = 0;
+      long averageTimeWithOptimization = 0;
+
+      for (Long aLong : timesWithoutOptimization) {
+        averageTimeWithoutOptimization += aLong;
+      }
+
+      for (Long aLong : timesWithOptimization) {
+        averageTimeWithOptimization += aLong;
+      }
+
+      averageTimeWithoutOptimization =
+          averageTimeWithoutOptimization / timesWithoutOptimization.size();
+      averageTimeWithOptimization = averageTimeWithOptimization / timesWithOptimization.size();
+
+      allTimesWithOptimization.add(averageTimeWithOptimization);
+      allTimesWithoutOptimization.add(averageTimeWithoutOptimization);
+    }
+
+    long allAverageTimeWitoutOptimization = 0;
+    long allAverageTimeWithOptimization = 0;
+
+    for (Long aLong : allTimesWithoutOptimization) {
+      allAverageTimeWitoutOptimization += aLong;
+    }
+
+    for (Long aLong : allTimesWithOptimization) {
+      allAverageTimeWithOptimization += aLong;
+    }
+
+    allAverageTimeWitoutOptimization =
+        allAverageTimeWitoutOptimization / allTimesWithoutOptimization.size();
+    allAverageTimeWithOptimization =
+        allAverageTimeWithOptimization / allTimesWithOptimization.size();
+
+    System.out.println("Without optimization: " + allAverageTimeWitoutOptimization);
+    System.out.println("With optimization: " + allAverageTimeWithOptimization);
+  }
+
   void testOptimizationOnDelete() {
     Random random = new Random();
     int height = 100;

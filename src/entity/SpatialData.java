@@ -72,7 +72,10 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
     StringBuilder sb = new StringBuilder();
     relatedDataList.forEach(
         data -> {
-          sb.append("Description: ")
+          sb.append("identificationNumber=")
+              .append(data.identificationNumber)
+              .append(" ")
+              .append("Description: ")
               .append(data.getDescription())
               .append(" ")
               .append(data.getShapeOfData());
@@ -85,11 +88,11 @@ public abstract class SpatialData<T extends IShapeData> implements IShapeData {
         + ", description='"
         + description
         + '\''
-        + ", relatedDataList=\n"
-        + sb
         + ", shape="
         + shape
         + '}'
+        + ", relatedDataList=\n"
+        + sb
         + "\n";
   }
 

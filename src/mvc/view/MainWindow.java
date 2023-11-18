@@ -212,20 +212,27 @@ public class MainWindow extends JFrame implements IMainWindow, IObserver {
 
   @Override
   public void searchProperties(Rectangle area) {
+    System.out.println("Searching");
     List<Property> result = controller.searchPropertiesInGivenShape(area);
     resultText.setText(result.toString());
+    System.out.println("Done");
   }
 
   @Override
   public void searchParcels(Rectangle area) {
+    System.out.println("Searching");
     List<Parcel> result = controller.searchParcelsInGivenShape(area);
     resultText.setText(result.toString());
+    System.out.println("Done");
   }
 
   @Override
   public void searchAllObjects(Rectangle area) {
+    System.out.println("Searching");
+    resultText.setText("Searching");
     List<? extends IShapeData>[] result = controller.searchAllObjectsInGivenShape(area);
     resultText.setText(Arrays.toString(result));
+    System.out.println("Done");
   }
 
   @Override
